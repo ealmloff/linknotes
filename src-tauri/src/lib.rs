@@ -79,7 +79,7 @@ async fn document_table() -> anyhow::Result<
 
 #[derive(Serialize, Deserialize)]
 struct ContextualDocumentLocation {
-    id: Id,
+    document_id: Id,
     location: PathBuf,
     segments: Vec<Segment>,
 }
@@ -132,7 +132,7 @@ async fn add_note(title: String, text: String, path: PathBuf) {
         }
         // Delete the old document if it exists
         document_table
-            .delete(current_location.id.clone())
+            .delete(current_location.document_id.clone())
             .await
             .unwrap();
     }
@@ -141,13 +141,13 @@ async fn add_note(title: String, text: String, path: PathBuf) {
         document,
         path: path_string.clone(),
     };
-    let id = document_table
+    let document_id = document_table
         .insert_with_chunks(contextual, chunks)
         .await
         .unwrap();
 
     let location = ContextualDocumentLocation {
-        id,
+        document_id,
         location: path,
         segments,
     };
@@ -222,7 +222,7 @@ async fn remove_note(path: PathBuf) {
     if let Some(current_location) = &current_location {
         // Delete the old document if it exists
         document_table
-            .delete(current_location.id.clone())
+            .delete(current_location.document_id.clone())
             .await
             .unwrap();
     }
