@@ -34,6 +34,8 @@ type ContextualDocumentTable =
 
 static DOCUMENT_TABLE: OnceLock<anyhow::Result<ContextualDocumentTable>> = OnceLock::new();
 
+static LOCATION: &str = "./.braindex";
+
 async fn document_table() -> anyhow::Result<
     &'static DocumentTable<
         Db,
@@ -44,8 +46,12 @@ async fn document_table() -> anyhow::Result<
 > {
     if DOCUMENT_TABLE.get().is_none() {
         let init = || async {
+            let root = PathBuf::from(LOCATION);
+            if !root.exists() {
+                std::fs::create_dir_all(&root)?;
+            }
             // Create database connection
-            let db = Surreal::new::<RocksDb>(std::env::temp_dir().join("notes.db")).await?;
+            let db = Surreal::new::<RocksDb>(root.join("notes.db")).await?;
 
             // Select a specific namespace / database
             db.use_ns("search").use_db("documents").await?;
@@ -53,6 +59,7 @@ async fn document_table() -> anyhow::Result<
             // Create a table in the surreal database to store the embeddings
             let document_table = db
                 .document_table_builder("documents")
+                .at(root.join("documents"))
                 .with_embedding_model(bert().await?.clone())
                 .with_chunker(DefaultSentenceChunker)
                 .build::<ContextualDocument>()
@@ -146,7 +153,7 @@ async fn add_note(title: String, text: String, path: PathBuf) {
     };
 
     // If it doesn't, create it
-    if current_location.is_some() {
+    if current_location.is_none() {
         let _: Option<ContextualDocumentLocation> = db
             .create((DOCUMENT_PATH_TABLE, path_string.as_str()))
             .content(location)
@@ -228,4 +235,35 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![add_note, remove_note, search])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[tokio::test]
+async fn test_notes() {
+    // remove the index
+    std::fs::remove_dir_all(LOCATION).ok();
+
+    add_note(
+        "my-note".to_string(),
+        "my note is here".to_string(),
+        PathBuf::from("./testing-remote-note.txt"),
+    )
+    .await;
+    add_note(
+        "my-note".to_string(),
+        "my note has changed".to_string(),
+        PathBuf::from("./testing-remote-note.txt"),
+    )
+    .await;
+    remove_note(PathBuf::from("./testing-remote-note.txt")).await;
+
+    add_note(
+        "search-note".to_string(),
+        "my note is here".to_string(),
+        PathBuf::from("./testing-search-note.txt"),
+    )
+    .await;
+    let results = search("my note is here".to_string(), 10).await;
+    assert_eq!(results.len(), 1);
+    assert_eq!(results[0].path, "./testing-search-note.txt");
+    assert_eq!(results[0].character_range, 0..15);
 }
