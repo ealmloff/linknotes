@@ -26,3 +26,4 @@ kalosm = { git = "https://github.com/floneum/floneum", features = ["language", "
 tokio = "1"
 surrealdb = { version = "1", features = ["kv-rocksdb"] }
 anyhow = "1.0.90"
+tauri-plugin-fs = "2"
