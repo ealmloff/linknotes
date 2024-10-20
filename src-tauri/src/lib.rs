@@ -14,8 +14,10 @@ use surrealdb::{
 };
 
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();
+static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 async fn bert() -> anyhow::Result<&'static Arc<CachedEmbeddingModel<Bert>>> {
+    let _guard = BERT_LOCK.lock().await;
     if BERT.get().is_none() {
         _ = BERT.set(
             Bert::new()
@@ -33,6 +35,7 @@ type ContextualDocumentTable =
     DocumentTable<Db, ContextualDocument, Arc<CachedEmbeddingModel<Bert>>, DefaultSentenceChunker>;
 
 static DOCUMENT_TABLE: OnceLock<anyhow::Result<ContextualDocumentTable>> = OnceLock::new();
+static DOCUMENT_TABLE_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 static LOCATION: &str = "./.braindex";
 
@@ -44,6 +47,7 @@ async fn document_table() -> anyhow::Result<
         DefaultSentenceChunker,
     >,
 > {
+    let _guard = DOCUMENT_TABLE_LOCK.lock().await;
     if DOCUMENT_TABLE.get().is_none() {
         let init = || async {
             let root = PathBuf::from(LOCATION);
@@ -122,7 +126,7 @@ async fn add_note(title: String, text: String, path: PathBuf) {
         .collect();
     // First check if the document already exists
     let current_location: Option<ContextualDocumentLocation> = db
-        .select((DOCUMENT_PATH_TABLE, &path_string))
+        .select((DOCUMENT_PATH_TABLE, path_string.as_str()))
         .await
         .unwrap();
     if let Some(current_location) = &current_location {
