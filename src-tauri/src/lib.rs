@@ -236,8 +236,9 @@ async fn add_note(title: String, text: String, path: PathBuf, workspace_id: Work
             .content(location)
             .await
             .unwrap();
+    }
     // Otherwise, update it
-    } else {
+    else {
         let _: Option<ContextualDocumentLocation> = db
             .update((DOCUMENT_PATH_TABLE, path_string.as_str()))
             .content(location)
@@ -344,37 +345,39 @@ async fn test_notes() {
     let workspace = load_workspace(PathBuf::from("./testing-workspace"));
     delete_workspace(workspace);
 
-    add_note(
-        "my-note".to_string(),
-        "my note is here".to_string(),
-        PathBuf::from("./testing-remote-note.txt"),
-        workspace,
-    )
-    .await;
-    add_note(
-        "my-note".to_string(),
-        "my note has changed".to_string(),
-        PathBuf::from("./testing-remote-note.txt"),
-        workspace,
-    )
-    .await;
-    remove_note(PathBuf::from("./testing-remote-note.txt"), workspace).await;
+    for _ in 0..2 {
+        add_note(
+            "my-note".to_string(),
+            "my note is here".to_string(),
+            PathBuf::from("./testing-remote-note.txt"),
+            workspace,
+        )
+        .await;
+        add_note(
+            "my-note".to_string(),
+            "my note has changed".to_string(),
+            PathBuf::from("./testing-remote-note.txt"),
+            workspace,
+        )
+        .await;
+        remove_note(PathBuf::from("./testing-remote-note.txt"), workspace).await;
 
-    add_note(
-        "search-note".to_string(),
-        "my note is here".to_string(),
-        PathBuf::from("./testing-search-note.txt"),
-        workspace,
-    )
-    .await;
-    let results = search("my note is here".to_string(), 10, workspace).await;
-    assert_eq!(results.len(), 1);
-    assert_eq!(results[0].path, "./testing-search-note.txt");
-    assert_eq!(results[0].character_range, 0..15);
+        add_note(
+            "search-note".to_string(),
+            "my note is here".to_string(),
+            PathBuf::from("./testing-search-note.txt"),
+            workspace,
+        )
+        .await;
+        let results = search("my note is here".to_string(), 10, workspace).await;
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].path, "./testing-search-note.txt");
+        assert_eq!(results[0].character_range, 0..15);
 
-    let notes = files_in_workspace(workspace).await;
-    assert_eq!(notes.len(), 1);
-    assert_eq!(notes, vec![PathBuf::from("./testing-search-note.txt")]);
+        let notes = files_in_workspace(workspace).await;
+        assert_eq!(notes.len(), 1);
+        assert_eq!(notes, vec![PathBuf::from("./testing-search-note.txt")]);
+    }
 
     delete_workspace(workspace);
     unload_workspace(workspace);
