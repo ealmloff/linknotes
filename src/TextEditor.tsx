@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { createEditor, Descendant } from 'slate';
+import { createEditor, Descendant, Transforms } from 'slate';
 import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
@@ -27,15 +27,31 @@ declare module 'slate' {
 const TextEditor: React.FC = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
 
-  // Define the initial value with a paragraph element
-  const [value, setValue] = useState<Descendant[]>([
+  const initialValue: Descendant[] = [
     {
-      type: 'paragraph', // Custom element type
-      children: [{ text: 'Write something here...' }],
+      type: 'paragraph',
+      children: [{ text: '' }],
     },
-  ]);
+  ];
 
-  // Define the renderElement function with correct typing for props
+  const [value, setValue] = useState<Descendant[]>(initialValue);
+  const [title, setTitle] = useState<string>(''); // State to store the heading/title
+  const [searchQuery, setSearchQuery] = useState<string>(''); // State for the search bar
+
+  const handleNewNote = () => {
+    setTitle('');
+    setValue([{ type: 'paragraph', children: [{ text: '' }] }]);
+    Transforms.select(editor, { anchor: { path: [0, 0], offset: 0 }, focus: { path: [0, 0], offset: 0 } });
+  };
+
+  const handleSaveNote = () => {
+    const note = {
+      title: title || 'Untitled',
+      content: value,
+    };
+    console.log('Saving note:', note);
+  };
+
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
       case 'heading':
@@ -47,13 +63,44 @@ const TextEditor: React.FC = () => {
   }, []);
 
   return (
-    <Slate
-      editor={editor}
-      initialValue={value} // Change `value` to `initialValue`
-      onValueChange={(newValue) => setValue(newValue)} // Change `onChange` to `onValueChange`
-    >
-      <Editable renderElement={renderElement} />
-    </Slate>
+    <div className="text-editor">
+      <div className="editor-header">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search..."
+          className="search-input"
+        />
+        <button onClick={handleNewNote} className="new-note-btn">New +</button>
+        <div className="editor-title">LinkedNotes</div>
+        <button onClick={handleSaveNote} className="save-note-btn">Save</button>
+      </div>
+      <div className="editor-body">
+        <div className="sidepanel">
+          <h2>Panel</h2>
+          <p>Some content here...</p>
+        </div>
+        <div className="editor-content">
+          <div className="editor-input">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
+              className="title-input"
+            />
+          </div>
+          <Slate editor={editor} initialValue={value} onChange={setValue}>
+            <Editable
+              renderElement={renderElement}
+              placeholder="Start typing your note here..."
+              className="editable"
+            />
+          </Slate>
+        </div>
+      </div>
+    </div>
   );
 };
 
