@@ -11,7 +11,7 @@ clean:
 	cargo clean
 	rm -f linknotes
 
-linknotes: install src/**/*.rs
+linknotes: install src-tauri/src/**/*.rs
 	npx tauri dev
 
 test: ac
