@@ -3,6 +3,7 @@ import { createEditor, Descendant, Transforms } from 'slate';
 import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
+import { HistoryEditor, withHistory } from 'slate-history';
 
 // Define custom types for the elements and text
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -13,7 +14,7 @@ type CustomText = { text: string; bold?: boolean };
 type CustomElement = ParagraphElement | HeadingElement;
 
 // Extend the Editor type
-type CustomEditor = BaseEditor & ReactEditor;
+type CustomEditor = BaseEditor & ReactEditor & HistoryEditor;
 
 // Declare module augmentation for Slate to use custom types
 declare module 'slate' {
@@ -25,7 +26,7 @@ declare module 'slate' {
 }
 
 const TextEditor: React.FC = () => {
-  const editor = useMemo(() => withReact(createEditor()), []);
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
   const initialValue: Descendant[] = [
     {
@@ -62,6 +63,16 @@ const TextEditor: React.FC = () => {
     }
   }, []);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.metaKey && event.key === 'z') {
+      event.preventDefault();
+      editor.undo();
+    } else if (event.metaKey && event.key === 's') {
+      event.preventDefault();
+      handleSaveNote();
+    }
+  };
+
   return (
     <div className="text-editor">
       <div className="editor-header">
@@ -96,6 +107,7 @@ const TextEditor: React.FC = () => {
               renderElement={renderElement}
               placeholder="Start typing your note here..."
               className="editable"
+              onKeyDown={handleKeyDown}
             />
           </Slate>
         </div>
