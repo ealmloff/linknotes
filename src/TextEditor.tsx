@@ -81,7 +81,7 @@ const TextEditor: React.FC = () => {
         });
         extractedText = extractedText.trim(); // Remove trailing space
 
-        console.log(extra)
+        console.log(extractedText)
 
         const result = await core.invoke('add_note', {
             title: note.title,
