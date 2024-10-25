@@ -80,7 +80,7 @@ button:hover {
 /* Text editor styles */
 .text-editor {
   width: 100%; /* Take up the full width */
-  height: 100%; /* Take up the full height */
+  height: 110%; /* Take up the full height */
   padding: 10px;
   border: 1px solid black;
   margin: auto;
@@ -88,13 +88,34 @@ button:hover {
   flex-direction: column;
 }
 
+.editor-content {
+  width: 80%; 
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Add vertical scroll */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  height: 100%; 
+}
+
+.editable {
+  width: 100%;
+  padding: 10px;
+  min-height: 200px;
+  border: 1px solid black;
+  font-size: 16px;
+  box-sizing: border-box;
+  flex-grow: 1; /* Allow the editable area to grow */
+  overflow-y: auto; /* Add vertical scroll */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
 /* Add styles for the search input */
 .search-input {
-  padding: 8px; /* Increase padding */
+  padding: 8px; 
   font-size: 16px;
   border: 1px solid black;
   border-radius: 10px;
-  width: 20.5%; /* Increase width */
+  width: 20.5%; 
 }
 
 .editor-header {
@@ -129,11 +150,11 @@ button:hover {
   display: flex;
   flex-direction: row;
   width: 100%;
-  height: 100%; /* Take up the full height */
+  height: 90%; 
 }
 
 .sidepanel {
-  width: 20%; /* Adjust the width as needed */
+  width: 20%; 
   padding: 20px;
   background-color: #e0e0e0;
   box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
@@ -142,11 +163,6 @@ button:hover {
   margin-right: 10px;
 }
 
-.editor-content {
-  width: 80%; /* Adjust the width as needed */
-  display: flex;
-  flex-direction: column;
-}
 
 .editor-input {
   margin-bottom: 10px;
@@ -160,14 +176,7 @@ button:hover {
   box-sizing: border-box;
 }
 
-.editable {
-  width: 100%;
-  padding: 10px;
-  min-height: 200px;
-  border: 1px solid black;
-  font-size: 16px;
-  box-sizing: border-box;
-}
+
 
 /* Dark mode styles */
 @media (prefers-color-scheme: dark) {
@@ -182,6 +191,7 @@ button:hover {
 
   .text-editor {
     background-color: #1f1f1f;
+    height: 98%;
   }
 
   a:hover {
