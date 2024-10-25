@@ -3,6 +3,9 @@ import { createEditor, Descendant, Transforms } from 'slate';
 import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
+// import { invoke } from '@tauri-apps/api/core'; // Import Tauri's invoke
+import {core} from '@tauri-apps/api';
+
 
 // Define custom types for the elements and text
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -26,6 +29,7 @@ declare module 'slate' {
 
 const TextEditor: React.FC = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
+  console.log('TextEditor component rendered');
 
   const initialValue: Descendant[] = [
     {
@@ -44,13 +48,55 @@ const TextEditor: React.FC = () => {
     Transforms.select(editor, { anchor: { path: [0, 0], offset: 0 }, focus: { path: [0, 0], offset: 0 } });
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
+    console.log('Preparing to save note:', title, value);
+    const noteContent = JSON.stringify(value);
     const note = {
-      title: title || 'Untitled',
-      content: value,
+        title: title || 'Untitled',
+        content: noteContent,
     };
-    console.log('Saving note:', note);
-  };
+
+    console.log('Invoke function:', core.invoke); // Check if invoke is defined
+    try {
+        // Check if the workplace ID can be retrieved
+        // const workplaceId = await invoke('get_workplace_id');
+        console.log('Workplace ID:', 0); // Log the workplace ID
+
+        // Call the add_note function
+        console.log('Calling add_note function...');
+        console.log('Note:', note);
+        var x = title ? `./${title}.txt` : './untitled.txt'
+        console.log(note.title, note.content, x);
+        const path = './test_note.txt';
+
+        // Extract text from content
+        const parsedContent = JSON.parse(note.content);
+        let extractedText = '';
+        parsedContent.forEach((block: any) => {
+            if (block.type === 'paragraph') {
+                block.children.forEach((child: any) => {
+                    extractedText += child.text + ' ';
+                });
+            }
+        });
+        extractedText = extractedText.trim(); // Remove trailing space
+
+        console.log(extra)
+
+        const result = await core.invoke('add_note', {
+            title: note.title,
+            text: extractedText,
+            workplace_id: 0,
+            path: path,
+        });
+
+        console.log('Invoke result:', result);
+
+        console.log('Note saved successfully');
+    } catch (error) {
+        console.error('Failed to save note:', error);
+    }
+};
 
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
