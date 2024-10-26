@@ -4,6 +4,7 @@ import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { HistoryEditor, withHistory } from 'slate-history';
+import { invoke } from "@tauri-apps/api/core";
 
 // Define custom types for the elements and text
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -72,10 +73,15 @@ const TextEditor: React.FC = () => {
       handleSaveNote();
     }
   };
+  
+  const run = async () => {
+    await invoke("load_workspace", { path: "./testing-workspace" });
+  };
 
   return (
     <div className="text-editor">
       <div className="editor-header">
+        <button onClick={run}>Run</button>
         <input
           type="text"
           value={searchQuery}

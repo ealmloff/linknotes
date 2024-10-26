@@ -132,6 +132,7 @@ fn get_workspace_ref(id: WorkspaceId) -> MappedRwLockReadGuard<'static, Workspac
 /// Load a workspace at a path into memory. This will either load the existing workspace from the filesystem or create a new workspace at the path.
 #[tauri::command]
 fn load_workspace(path: PathBuf) -> WorkspaceId {
+    println!("Loading workspace at {:?}", path);
     let mut workspaces = open_workspaces().write();
     let new_workspace = Workspace::new(path);
     let id = workspaces.insert(new_workspace);
