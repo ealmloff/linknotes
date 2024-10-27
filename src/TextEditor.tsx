@@ -63,8 +63,7 @@ const TextEditor: React.FC = () => {
         // Check if the workplace ID can be retrieved
         const workplaceId = await invoke('get_workspace_id', { path: "./testing-workspace" });
         console.log('Workplace ID:', 0); // Log the workplace ID
-        toast.info('Workplace ID retrieved');
-        toast.success(`Note saved successfully: ${JSON.stringify(workplaceId)}`);
+        toast.info(`Workspace Loaded: ${JSON.stringify(workplaceId)}`);
 
         // Call the add_note function
         console.log('Calling add_note function...');
