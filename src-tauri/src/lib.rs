@@ -121,11 +121,13 @@ pub struct WorkspaceId {
 static OPEN_WORKSPACES: OnceLock<RwLock<Slab<Workspace>>> = OnceLock::new();
 
 fn open_workspaces() -> &'static RwLock<Slab<Workspace>> {
+    println!("open_workspaces called");
     OPEN_WORKSPACES.get_or_init(|| RwLock::new(Slab::new()))
 }
 
 /// Get a reference to a workspace by the id
 fn get_workspace_ref(id: WorkspaceId) -> MappedRwLockReadGuard<'static, Workspace> {
+    println!("get_workspace_ref called with id: {:?}", id);
     RwLockReadGuard::map(open_workspaces().read(), |slab| slab.get(id.id).unwrap())
 }
 
@@ -136,22 +138,49 @@ fn load_workspace(path: PathBuf) -> WorkspaceId {
     let mut workspaces = open_workspaces().write();
     let new_workspace = Workspace::new(path);
     let id = workspaces.insert(new_workspace);
+    println!("Workspace loaded with id: {:?}", id);
+    WorkspaceId { id }
+}
+
+#[tauri::command]
+fn get_workspace_id(path: PathBuf) -> WorkspaceId {
+    println!("get_workspace_id called with path: {:?}", path);
+    let workspaces = open_workspaces().read();
+    
+    // Check if the workspace already exists
+    for (id, workspace) in workspaces.iter() {
+        if workspace.location == path {
+            println!("Workspace found with id: {:?}", id);
+            return WorkspaceId { id };
+        }
+    }
+    
+    // If not found, create a new workspace
+    drop(workspaces); // Drop the read lock before acquiring a write lock
+    let mut workspaces = open_workspaces().write();
+    let new_workspace = Workspace::new(path.clone());
+    let id = workspaces.insert(new_workspace);
+    println!("New workspace created with id: {:?}", id);
     WorkspaceId { id }
 }
 
 /// Unload a workspace from memory. This should be called whenever the workspace is closed.
 #[tauri::command]
 fn unload_workspace(id: WorkspaceId) {
+    println!("unload_workspace called with id: {:?}", id);
     let mut workspaces = open_workspaces().write();
     workspaces.remove(id.id);
+    println!("Workspace unloaded with id: {:?}", id);
 }
 
 /// Permanently delete a workspace from the filesystem.
 #[tauri::command]
 fn delete_workspace(id: WorkspaceId) {
+    println!("delete_workspace called with id: {:?}", id);
     let workspace = get_workspace_ref(id);
     let path = workspace.location.clone();
     _ = std::fs::remove_dir_all(path);
+    println!("Workspace deleted with id: {:?}", id);
 }
 
 #[derive(Serialize, Deserialize)]
@@ -183,6 +212,8 @@ struct Segment {
 /// Set the note with a title, contents and path. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
 async fn add_note(title: String, text: String, path: PathBuf, workspace_id: WorkspaceId) {
+    println!("Add_note called");
+    println!("Workspace added with id: {:?}", workspace_id);
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
@@ -328,6 +359,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
+            get_workspace_id,
             add_note,
             remove_note,
             search,
