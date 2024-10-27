@@ -4,6 +4,9 @@ import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { HistoryEditor, withHistory } from 'slate-history';
+import { invoke } from "@tauri-apps/api/core";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Define custom types for the elements and text
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -43,15 +46,60 @@ const TextEditor: React.FC = () => {
     setTitle('');
     setValue([{ type: 'paragraph', children: [{ text: '' }] }]);
     Transforms.select(editor, { anchor: { path: [0, 0], offset: 0 }, focus: { path: [0, 0], offset: 0 } });
+    toast.success('New note created');
   };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
+    toast.info('Preparing to save note');
+    console.log('Preparing to save note:', title, value);
+    const noteContent = JSON.stringify(value);
     const note = {
-      title: title || 'Untitled',
-      content: value,
+        title: title || 'Untitled',
+        content: noteContent,
     };
-    console.log('Saving note:', note);
-  };
+
+    console.log('Invoke function:', invoke); // Check if invoke is defined
+    try {
+        // Check if the workplace ID can be retrieved
+        // const workplaceId = await invoke('get_workplace_id');
+        console.log('Workplace ID:', 0); // Log the workplace ID
+        toast.info('Workplace ID retrieved');
+
+        // Call the add_note function
+        console.log('Calling add_note function...');
+        console.log('Note:', note);
+        var x = title ? `./${title}.txt` : './untitled.txt'
+        console.log(note.title, note.content, x);
+        const path = './test_note.txt';
+
+        // Extract text from content
+        const parsedContent = JSON.parse(note.content);
+        let extractedText = '';
+        parsedContent.forEach((block: any) => {
+            if (block.type === 'paragraph') {
+                block.children.forEach((child: any) => {
+                    extractedText += child.text + ' ';
+                });
+            }
+        });
+        extractedText = extractedText.trim(); // Remove trailing space
+
+        console.log(extractedText)
+
+        const result = await invoke('add_note', {
+            title: note.title,
+            text: extractedText,
+            workspaceId: {id: 1},
+            path: path,
+        });
+
+        console.log('Invoke result:', result);
+        toast.success(`Note saved successfully: ${JSON.stringify(result)}`);
+    } catch (error) {
+        console.error('Failed to save note:', error);
+        toast.error(`Failed to save note ${JSON.stringify(error)}`);
+    }
+};
 
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -67,15 +115,28 @@ const TextEditor: React.FC = () => {
     if (event.metaKey && event.key === 'z') {
       event.preventDefault();
       editor.undo();
+      toast.info('Undo action performed');
     } else if (event.metaKey && event.key === 's') {
       event.preventDefault();
       handleSaveNote();
     }
   };
+  
+  const run = async () => {
+    try {
+      const result = await invoke("load_workspace", { path: "./testing-workspace" });
+      toast.success(`Workspace loaded successfully: ${JSON.stringify(result)}`);
+      
+    } catch (error) {
+      toast.error('Failed to load workspace');
+    }
+  };
 
   return (
     <div className="text-editor">
+      <ToastContainer />
       <div className="editor-header">
+        <button onClick={run}>Run</button>
         <input
           type="text"
           value={searchQuery}
