@@ -5,6 +5,8 @@ import { BaseEditor } from 'slate';
 import { ReactEditor } from 'slate-react';
 import { HistoryEditor, withHistory } from 'slate-history';
 import { invoke } from "@tauri-apps/api/core";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Define custom types for the elements and text
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -44,6 +46,7 @@ const TextEditor: React.FC = () => {
     setTitle('');
     setValue([{ type: 'paragraph', children: [{ text: '' }] }]);
     Transforms.select(editor, { anchor: { path: [0, 0], offset: 0 }, focus: { path: [0, 0], offset: 0 } });
+    toast.success('New note created');
   };
 
   const handleSaveNote = () => {
@@ -51,6 +54,7 @@ const TextEditor: React.FC = () => {
       title: title || 'Untitled',
       content: value,
     };
+    toast.success('Note saved');
     console.log('Saving note:', note);
   };
 
@@ -68,6 +72,7 @@ const TextEditor: React.FC = () => {
     if (event.metaKey && event.key === 'z') {
       event.preventDefault();
       editor.undo();
+      toast.info('Undo action performed');
     } else if (event.metaKey && event.key === 's') {
       event.preventDefault();
       handleSaveNote();
@@ -75,11 +80,17 @@ const TextEditor: React.FC = () => {
   };
   
   const run = async () => {
-    await invoke("load_workspace", { path: "./testing-workspace" });
+    try {
+      await invoke("load_workspace", { path: "./testing-workspace" });
+      toast.success('Workspace loaded successfully');
+    } catch (error) {
+      toast.error('Failed to load workspace');
+    }
   };
 
   return (
     <div className="text-editor">
+      <ToastContainer />
       <div className="editor-header">
         <button onClick={run}>Run</button>
         <input
