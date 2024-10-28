@@ -214,6 +214,7 @@ struct Segment {
 async fn add_note(title: String, text: String, path: PathBuf, workspace_id: WorkspaceId) {
     println!("Add_note called");
     println!("Workspace added with id: {:?}", workspace_id);
+    std::fs::write(&path, &text).unwrap();
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
