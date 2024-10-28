@@ -14,6 +14,9 @@ use surrealdb::{
     Surreal,
 };
 
+use std::fs;
+use std::path::Path;
+
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();
 static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
@@ -209,16 +212,31 @@ struct Segment {
     source_char_range: Range<usize>,
 }
 
-/// Set the note with a title, contents and path. The path should be canonicalized so it is consistent regardless of the working directory.
+// Function to create a notes directory and save the note
 #[tauri::command]
-async fn add_note(title: String, text: String, path: PathBuf, workspace_id: WorkspaceId) {
+async fn add_note(title: String, text: String, workspace_id: WorkspaceId) {
     println!("Add_note called");
     println!("Workspace added with id: {:?}", workspace_id);
-    std::fs::write(&path, &text).unwrap();
+    
     let workspace = get_workspace_ref(workspace_id);
+    let workspace_path = &workspace.location;
+    let notes_dir = workspace_path.join("notes");
+
+    // Create the notes directory if it doesn't exist
+    if !notes_dir.exists() {
+        fs::create_dir_all(&notes_dir).unwrap();
+    }
+
+    // Construct the file path using the title
+    let file_name = format!("{}.txt", title);
+    let file_path = notes_dir.join(file_name);
+
+    // Write the note content to the file
+    fs::write(&file_path, &text).unwrap();
+
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
-    let path_string = path.display().to_string();
+    let path_string = file_path.display().to_string();
     let document = Document::from_parts(title, text);
     let chunks = DefaultSentenceChunker
         .chunk(&document, bert().await.unwrap())
@@ -258,7 +276,7 @@ async fn add_note(title: String, text: String, path: PathBuf, workspace_id: Work
 
     let location = ContextualDocumentLocation {
         document_id,
-        location: path,
+        location: file_path,
         segments,
     };
 
