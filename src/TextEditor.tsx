@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { createEditor, Descendant, Transforms } from 'slate';
 import { Slate, Editable, withReact, RenderElementProps } from 'slate-react';
 import { BaseEditor } from 'slate';
@@ -41,6 +41,20 @@ const TextEditor: React.FC = () => {
   const [value, setValue] = useState<Descendant[]>(initialValue);
   const [title, setTitle] = useState<string>(''); // State to store the heading/title
   const [searchQuery, setSearchQuery] = useState<string>(''); // State for the search bar
+
+  const [files, setFiles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      const workspaceId = await invoke('get_workspace_id', { path: "./testing-workspace" });
+      const files: string[] = await invoke('files_in_workspace', {
+        workspaceId,
+      });
+      setFiles(files);
+    };
+    fetchFiles();
+  },
+  []);
 
   const handleNewNote = () => {
     setTitle('');
@@ -138,7 +152,9 @@ const TextEditor: React.FC = () => {
       <div className="editor-body">
         <div className="sidepanel">
           <h2>Panel</h2>
-          <p>Some content here...</p>
+          {(files.length > 0 ? files.map((file: string) => (
+            <p>{file}</p>
+          )) : <p>No files found</p>)}
         </div>
         <div className="editor-content">
           <div className="editor-input">
