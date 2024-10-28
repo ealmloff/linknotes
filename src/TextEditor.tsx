@@ -119,22 +119,11 @@ const TextEditor: React.FC = () => {
       handleSaveNote();
     }
   };
-  
-  const run = async () => {
-    try {
-      const result = await invoke("load_workspace", { path: "./testing-workspace" });
-      toast.success(`Workspace loaded successfully: ${JSON.stringify(result)}`);
-      
-    } catch (error) {
-      toast.error('Failed to load workspace');
-    }
-  };
 
   return (
     <div className="text-editor">
       <ToastContainer />
       <div className="editor-header">
-        <button onClick={run}>Run</button>
         <input
           type="text"
           value={searchQuery}
