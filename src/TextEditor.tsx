@@ -217,6 +217,7 @@ const TextEditor: React.FC = () => {
     }
   };
 
+
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -227,6 +228,7 @@ const TextEditor: React.FC = () => {
         return <p {...props.attributes}>{props.children}</p>;
     }
   }, []);
+
 
   return (
     <div className="text-editor">
