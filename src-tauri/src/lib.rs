@@ -400,14 +400,12 @@ async fn test_notes() {
         add_note(
             "my-note".to_string(),
             "my note is here".to_string(),
-            PathBuf::from("./testing-remote-note.txt"),
             workspace,
         )
         .await;
         add_note(
             "my-note".to_string(),
             "my note has changed".to_string(),
-            PathBuf::from("./testing-remote-note.txt"),
             workspace,
         )
         .await;
@@ -416,7 +414,6 @@ async fn test_notes() {
         add_note(
             "search-note".to_string(),
             "my note is here".to_string(),
-            PathBuf::from("./testing-search-note.txt"),
             workspace,
         )
         .await;
