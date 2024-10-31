@@ -1,19 +1,9 @@
 use kalosm::language::*;
-use parking_lot::{MappedRwLockReadGuard, RwLock, RwLockReadGuard};
 use serde::{Deserialize, Serialize};
-use slab::Slab;
 use std::fs;
 use std::ops::Range;
 use std::path::PathBuf;
-use std::{
-    num::NonZero,
-    sync::{Arc, OnceLock},
-};
-use surrealdb::{
-    engine::local::{Db, RocksDb},
-    sql::Id,
-    Surreal,
-};
+use surrealdb::sql::Id;
 
 use crate::bert;
 use crate::workspace::{get_workspace_ref, WorkspaceId};

@@ -1,21 +1,11 @@
 use kalosm::language::*;
 use note::{add_note, read_file, remove_note, ContextualDocument};
-use parking_lot::{MappedRwLockReadGuard, RwLock, RwLockReadGuard};
 use search::search;
-use serde::{Deserialize, Serialize};
-use slab::Slab;
-use std::fs;
-use std::ops::Range;
-use std::path::PathBuf;
 use std::{
     num::NonZero,
     sync::{Arc, OnceLock},
 };
-use surrealdb::{
-    engine::local::{Db, RocksDb},
-    sql::Id,
-    Surreal,
-};
+use surrealdb::engine::local::Db;
 use workspace::{
     delete_workspace, files_in_workspace, get_workspace_id, load_workspace, unload_workspace,
 };
@@ -67,6 +57,8 @@ pub fn run() {
 
 #[tokio::test]
 async fn test_notes() {
+    use std::path::PathBuf;
+    
     let workspace = load_workspace(PathBuf::from("./testing-workspace"));
     delete_workspace(workspace);
 
