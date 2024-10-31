@@ -29,6 +29,7 @@ anyhow = "1.0.90"
 tauri-plugin-fs = "2"
 slab = "0.4.9"
 parking_lot = { version = "0.12.3", features = ["send_guard"] }
+tracing-subscriber = "0.3.18"
 
 [features]
 metal = ["kalosm/metal"]

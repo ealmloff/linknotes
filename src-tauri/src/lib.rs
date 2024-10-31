@@ -15,7 +15,6 @@ use surrealdb::{
 };
 
 use std::fs;
-use std::path::Path;
 
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();
 static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());

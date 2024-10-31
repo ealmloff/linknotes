@@ -1230,6 +1230,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-shell",
  "tokio",
+ "tracing-subscriber",
 ]
 
 [[package]]
