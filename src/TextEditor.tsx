@@ -34,8 +34,8 @@ const TextEditor: React.FC = () => {
   const [value, setValue] = useState<Descendant[]>(INITIAL_VALUE);
   const [title, setTitle] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, path: string }[]>([]);
-  const [workspaceId, setWorkspaceId] = useState<string>('');
+  const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, tags: { name: string, manual: boolean }[] }[]>([]);
+  const [workspaceId, setWorkspaceId] = useState<number>(0);
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -51,7 +51,8 @@ const TextEditor: React.FC = () => {
 
   useEffect(() => {
     if (title && value !== INITIAL_VALUE) {
-      saveState();
+      // TODO: Save the state here. This used to try to call the non-existent save_title and save_content functions on the backend.
+      // This should call save_note instead.
     }
   }, [title, value]);
 
@@ -66,23 +67,21 @@ const TextEditor: React.FC = () => {
   // Helper functions
   const loadWorkspace = async () => {
     try {
-      const id = await invoke('get_workspace_id', { path: "./testing-workspace" });
-      setWorkspaceId(id as string);
-      loadSavedNotes(id as string);
+      const id = await invoke('get_workspace_id', { path: "./testing-workspace" }) as number;
+      setWorkspaceId(id);
+      loadSavedNotes(id);
     } catch (error) {
       console.error('Failed to load workspace:', error);
       toast.error('Failed to load workspace');
     }
   };
 
-  const loadSavedNotes = async (workspaceId: string) => {
+  const loadSavedNotes = async (workspaceId: number) => {
     try {
-      const files = await invoke('files_in_workspace', { workspaceId }) as string[];
-      const notes = await Promise.all(files.map(async (path) => {
-        const content = await invoke('read_file', { path }) as string;
-        const title = path.split('/').pop()?.replace('.txt', '') || 'Untitled';
-        return { title, content, path };
-      }));
+      const files = await invoke('files_in_workspace', { workspaceId }) as { document: {title: string, body: string}, tags: { name: string, manual: boolean }[] }[];
+      const notes = files.map((doc) => {
+        return { title: doc.document.title, content: doc.document.title, tags: doc.tags };
+      });
       setSavedNotes(notes);
     } catch (error) {
       console.error('Failed to load saved notes:', error);
@@ -92,22 +91,13 @@ const TextEditor: React.FC = () => {
 
   const loadSavedState = async () => {
     try {
-      const savedTitle = await invoke('load_title');
-      const savedContent = await invoke('load_content');
-      if (savedTitle) setTitle(savedTitle as string);
-      if (savedContent) setValue(JSON.parse(savedContent as string));
+      // // TODO: these functions don't exist on the backend? Do they need to? You can get the content from the read_note function.
+      // const savedTitle = await invoke('load_title');
+      // const savedContent = await invoke('load_content');
+      // if (savedTitle) setTitle(savedTitle as string);
+      // if (savedContent) setValue(JSON.parse(savedContent as string));
     } catch (error) {
       console.error('Failed to load saved state:', error);
-    }
-  };
-
-  const saveState = async () => {
-    try {
-      await invoke('save_title', { title });
-      await invoke('save_content', { content: JSON.stringify(value) });
-    } catch (error) {
-      console.error('Failed to save state:', error);
-      // Remove the toast notification from here
     }
   };
 
@@ -126,11 +116,11 @@ const TextEditor: React.FC = () => {
     const note = {
       title: title || 'Untitled',
       content: noteContent,
+      tags: [],
     };
   
     try {
-      console.log('Calling add_note function...');
-      const path = `./testing-workspace/notes/${note.title}.txt`;
+      console.log('Calling save_note function...');
   
       const parsedContent = JSON.parse(note.content);
       let extractedText = '';
@@ -143,23 +133,22 @@ const TextEditor: React.FC = () => {
       });
       extractedText = extractedText.trim();
   
-      await invoke('add_note', {
+      await invoke('save_note', {
         title: note.title,
         text: extractedText,
         workspaceId,
-        path,
       });
   
       setSavedNotes(prevNotes => {
-        const index = prevNotes.findIndex(n => n.path === path);
+        const index = prevNotes.findIndex(n => n.title === title);
         if (index !== -1) {
           // Update existing note
           const updatedNotes = [...prevNotes];
-          updatedNotes[index] = { title: note.title, content: extractedText, path };
+          updatedNotes[index] = { title: note.title, content: extractedText, tags: note.tags };
           return updatedNotes;
         } else {
           // Add new note
-          return [...prevNotes, { title: note.title, content: extractedText, path }];
+          return [...prevNotes, { title: note.title, content: extractedText, tags: note.tags }];
         }
       });
   
@@ -170,18 +159,17 @@ const TextEditor: React.FC = () => {
     }
   }, [title, value, workspaceId]);
 
-  const handleNoteSelect = useCallback(async (path: string) => {
+  const handleNoteSelect = useCallback(async (title: string) => {
     try {
-      console.log("Attempting to read file:", path);
-      const content = await invoke('read_file', { path }) as string;
+      console.log("Attempting to read file:", title);
+      const content = await invoke('read_note', { title, workspaceId }) as { document: {title: string, body: string}, tags: { name: string, manual: boolean }[] };
       console.log("Received content from backend:", content);
 
       // Set the title
-      const title = path.split('/').pop()?.replace('.txt', '') || 'Untitled';
       setTitle(title);
 
       // Create a new Slate-compatible value
-      const newValue: Descendant[] = content.split('\n').map(line => {
+      const newValue: Descendant[] = content.document.body.split('\n').map(line => {
         if (line.startsWith('#')) {
           return {
             type: 'heading' as const,
@@ -204,7 +192,7 @@ const TextEditor: React.FC = () => {
       console.error('Failed to load note:', error);
       toast.error(`Failed to load note: ${error}`);
     }
-  }, [editor, setTitle, setValue]);
+  }, [editor, setTitle, setValue, workspaceId]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.metaKey && event.key === 'z') {
@@ -251,8 +239,8 @@ const TextEditor: React.FC = () => {
   {savedNotes.length > 0 ? (
     <ul>
       {savedNotes.map((note, index) => (
-        <li key={index} onClick={() => handleNoteSelect(note.path)}>
-          <strong>{note.title}</strong>
+        <li key={index} onClick={() => handleNoteSelect(note.title)}>
+          <strong>{note.title} with tags {note.tags.map(tag => tag.name).join(', ')}</strong>
           <span>{note.content.substring(0, 50)}...</span>
         </li>
       ))}

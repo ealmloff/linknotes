@@ -1,5 +1,5 @@
 use kalosm::language::*;
-use note::{add_note, read_file, remove_note, set_tags, ContextualDocument};
+use note::{save_note, read_note, remove_note, set_tags, ContextualDocument};
 use search::search;
 use std::{
     num::NonZero,
@@ -43,11 +43,11 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             get_workspace_id,
-            add_note,
+            save_note,
             set_tags,
             remove_note,
             search,
-            read_file,
+            read_note,
             files_in_workspace,
             load_workspace,
             unload_workspace,

@@ -76,7 +76,7 @@ pub async fn set_tags(
 
 /// Save a note with a title, and contents in a workspace. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
-pub async fn add_note(title: String, text: String, workspace_id: WorkspaceId) {
+pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
     tracing::info!("Add_note called");
     tracing::info!("Workspace added with id: {:?}", workspace_id);
 
@@ -177,10 +177,10 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
 
 /// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
-pub async fn read_file(
+pub async fn read_note(
     title: String,
     workspace_id: WorkspaceId,
-) -> Result<String, DocumentDoesNotExistError> {
+) -> Result<ContextualDocument, DocumentDoesNotExistError> {
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
@@ -189,7 +189,9 @@ pub async fn read_file(
         .await
         .unwrap()
         .ok_or(DocumentDoesNotExistError)?;
-    Ok(std::fs::read_to_string(location.location).unwrap())
+    let note: ContextualDocument = document_table.select(location.document_id).await.unwrap();
+    Ok(note)
+
 }
 
 #[tokio::test]
