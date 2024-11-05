@@ -4,10 +4,7 @@ use serde::{Deserialize, Serialize};
 use slab::Slab;
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use surrealdb::{
-    engine::local::RocksDb,
-    Surreal,
-};
+use surrealdb::{engine::local::RocksDb, Surreal};
 
 use crate::note::ContextualDocument;
 use crate::{bert, ContextualDocumentTable};
@@ -27,20 +24,30 @@ impl Workspace {
         }
     }
 
-    async fn files(&self) -> anyhow::Result<Vec<PathBuf>> {
+    pub fn document_path(&self, title: &str) -> anyhow::Result<PathBuf> {
+        let notes_dir = self.location.join("notes");
+
+        // Create the notes directory if it doesn't exist
+        if !notes_dir.exists() {
+            std::fs::create_dir_all(&notes_dir).unwrap();
+        }
+
+        // Construct the file path using the title
+        let file_name = format!("{}.txt", title);
+        let file_path = notes_dir.join(file_name);
+        Ok(file_path)
+    }
+
+    async fn files(&self) -> anyhow::Result<Vec<ContextualDocument>> {
         #[derive(Serialize, Deserialize)]
         struct FilePath {
             path: PathBuf,
         }
 
         let table = self.document_table().await?;
-        let paths: Vec<FilePath> = table
-            .table()
-            .db()
-            .query("SELECT path FROM documents")
-            .await?
-            .take(0)?;
-        Ok(paths.into_iter().map(|p| p.path).collect())
+        let paths: Vec<ContextualDocument> =
+            table.table().db().select(table.table().table()).await?;
+        Ok(paths)
     }
 
     pub async fn document_table(&self) -> anyhow::Result<&ContextualDocumentTable> {
@@ -89,36 +96,36 @@ pub struct WorkspaceId {
 static OPEN_WORKSPACES: OnceLock<RwLock<Slab<Workspace>>> = OnceLock::new();
 
 fn open_workspaces() -> &'static RwLock<Slab<Workspace>> {
-    println!("open_workspaces called");
+    tracing::info!("open_workspaces called");
     OPEN_WORKSPACES.get_or_init(|| RwLock::new(Slab::new()))
 }
 
 /// Get a reference to a workspace by the id
 pub fn get_workspace_ref(id: WorkspaceId) -> MappedRwLockReadGuard<'static, Workspace> {
-    println!("get_workspace_ref called with id: {:?}", id);
+    tracing::info!("get_workspace_ref called with id: {:?}", id);
     RwLockReadGuard::map(open_workspaces().read(), |slab| slab.get(id.id).unwrap())
 }
 
 /// Load a workspace at a path into memory. This will either load the existing workspace from the filesystem or create a new workspace at the path.
 #[tauri::command]
 pub fn load_workspace(path: PathBuf) -> WorkspaceId {
-    println!("Loading workspace at {:?}", path);
+    tracing::info!("Loading workspace at {:?}", path);
     let mut workspaces = open_workspaces().write();
     let new_workspace = Workspace::new(path);
     let id = workspaces.insert(new_workspace);
-    println!("Workspace loaded with id: {:?}", id);
+    tracing::info!("Workspace loaded with id: {:?}", id);
     WorkspaceId { id }
 }
 
 #[tauri::command]
 pub fn get_workspace_id(path: PathBuf) -> WorkspaceId {
-    println!("get_workspace_id called with path: {:?}", path);
+    tracing::info!("get_workspace_id called with path: {:?}", path);
     let workspaces = open_workspaces().read();
 
     // Check if the workspace already exists
     for (id, workspace) in workspaces.iter() {
         if workspace.location == path {
-            println!("Workspace found with id: {:?}", id);
+            tracing::info!("Workspace found with id: {:?}", id);
             return WorkspaceId { id };
         }
     }
@@ -128,32 +135,33 @@ pub fn get_workspace_id(path: PathBuf) -> WorkspaceId {
     let mut workspaces = open_workspaces().write();
     let new_workspace = Workspace::new(path.clone());
     let id = workspaces.insert(new_workspace);
-    println!("New workspace created with id: {:?}", id);
+    tracing::info!("New workspace created with id: {:?}", id);
     WorkspaceId { id }
 }
 
 /// Unload a workspace from memory. This should be called whenever the workspace is closed.
 #[tauri::command]
 pub fn unload_workspace(id: WorkspaceId) {
-    println!("unload_workspace called with id: {:?}", id);
+    tracing::info!("unload_workspace called with id: {:?}", id);
     let mut workspaces = open_workspaces().write();
     workspaces.remove(id.id);
-    println!("Workspace unloaded with id: {:?}", id);
+    tracing::info!("Workspace unloaded with id: {:?}", id);
 }
 
 /// Permanently delete a workspace from the filesystem.
 #[tauri::command]
 pub fn delete_workspace(id: WorkspaceId) {
-    println!("delete_workspace called with id: {:?}", id);
+    tracing::info!("delete_workspace called with id: {:?}", id);
     let workspace = get_workspace_ref(id);
     let path = workspace.location.clone();
     _ = std::fs::remove_dir_all(path);
-    println!("Workspace deleted with id: {:?}", id);
+    tracing::info!("Workspace deleted with id: {:?}", id);
 }
 
 /// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
-pub async fn files_in_workspace(workspace_id: WorkspaceId) -> Vec<PathBuf> {
+pub async fn files_in_workspace(workspace_id: WorkspaceId) -> Vec<ContextualDocument> {
+    tracing::info!("files_in_workspace called with id: {:?}", workspace_id);
     let workspace = get_workspace_ref(workspace_id);
     workspace.files().await.unwrap()
 }

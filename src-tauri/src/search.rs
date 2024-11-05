@@ -8,7 +8,7 @@ use crate::workspace::{get_workspace_ref, WorkspaceId};
 #[derive(Serialize, Deserialize)]
 pub struct SearchResult {
     pub distance: f32,
-    pub path: String,
+    pub title: String,
     pub character_range: Range<usize>,
 }
 
@@ -27,7 +27,7 @@ pub async fn search(text: String, results: usize, workspace_id: WorkspaceId) -> 
     nearest
         .into_iter()
         .map(|result| {
-            let path = result.record.path.clone();
+            let title = result.record.document.title().to_string();
             let char_start = result.record.document.body()[0..result.byte_range.start]
                 .chars()
                 .count();
@@ -38,7 +38,7 @@ pub async fn search(text: String, results: usize, workspace_id: WorkspaceId) -> 
             let distance = result.distance;
             SearchResult {
                 distance,
-                path,
+                title,
                 character_range,
             }
         })
