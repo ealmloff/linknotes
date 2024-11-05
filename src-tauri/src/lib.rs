@@ -12,6 +12,7 @@ use workspace::{
 
 mod note;
 mod search;
+mod classifier;
 mod workspace;
 
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();

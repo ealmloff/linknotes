@@ -1214,6 +1214,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "kalosm",
+ "kalosm-learning",
  "parking_lot",
  "serde",
  "serde_json",
@@ -3982,6 +3983,7 @@ dependencies = [
 [[package]]
 name = "kalosm"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4008,6 +4010,7 @@ dependencies = [
 [[package]]
 name = "kalosm-common"
 version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -4026,6 +4029,7 @@ dependencies = [
 [[package]]
 name = "kalosm-language"
 version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "arroy",
@@ -4079,6 +4083,7 @@ dependencies = [
 [[package]]
 name = "kalosm-language-model"
 version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4103,8 +4108,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "kalosm-learning"
+version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
+dependencies = [
+ "anyhow",
+ "candle-core",
+ "candle-nn",
+ "half 2.4.1",
+ "kalosm-common",
+ "kalosm-language-model",
+ "kalosm-learning-macro",
+ "rand 0.8.5",
+ "tokio",
+ "tokio-util",
+]
+
+[[package]]
+name = "kalosm-learning-macro"
+version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
+dependencies = [
+ "quote",
+ "syn 2.0.87",
+]
+
+[[package]]
 name = "kalosm-llama"
 version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4127,6 +4159,7 @@ dependencies = [
 [[package]]
 name = "kalosm-ocr"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -4145,6 +4178,7 @@ dependencies = [
 [[package]]
 name = "kalosm-parse-macro"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4154,6 +4188,7 @@ dependencies = [
 [[package]]
 name = "kalosm-sample"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "kalosm-parse-macro",
@@ -4163,6 +4198,7 @@ dependencies = [
 [[package]]
 name = "kalosm-sound"
 version = "0.3.4"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4193,6 +4229,7 @@ dependencies = [
 [[package]]
 name = "kalosm-streams"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "futures-util",
  "image 0.24.9",
@@ -4203,6 +4240,7 @@ dependencies = [
 [[package]]
 name = "kalosm-vision"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "image 0.24.9",
  "kalosm-ocr",
@@ -5175,7 +5213,7 @@ version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af1844ef2428cc3e1cb900be36181049ef3d3193c63e43026cfe202983b27a56"
 dependencies = [
- "proc-macro-crate 2.0.2",
+ "proc-macro-crate 1.3.1",
  "proc-macro2",
  "quote",
  "syn 2.0.87",
@@ -6631,6 +6669,7 @@ dependencies = [
 [[package]]
 name = "rbert"
 version = "0.3.3"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7020,6 +7059,7 @@ dependencies = [
 [[package]]
 name = "rphi"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7243,6 +7283,7 @@ checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 [[package]]
 name = "rwhisper"
 version = "0.3.5"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "accelerate-src",
  "anyhow",
@@ -7269,6 +7310,7 @@ dependencies = [
 [[package]]
 name = "rwuerstchen"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7438,6 +7480,7 @@ dependencies = [
 [[package]]
 name = "segment-anything-rs"
 version = "0.3.2"
+source = "git+https://github.com/floneum/floneum#e5a1ac3a307d41df6c14ebbd432dfe610581ba5e"
 dependencies = [
  "anyhow",
  "candle-core",

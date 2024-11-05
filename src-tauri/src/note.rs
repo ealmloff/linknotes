@@ -51,6 +51,7 @@ pub async fn set_tags(
     tags: Vec<Tag>,
     workspace_id: WorkspaceId,
 ) -> Result<(), DocumentDoesNotExistError> {
+    tracing::info!("set_tags called with title {:?} and tags {:?}", title, tags);
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
@@ -164,7 +165,7 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
     let db = document_table.table().db();
     // First check if the document already exists
     let current_location: Option<ContextualDocumentLocation> =
-        db.delete((DOCUMENT_NAME_TABLE, &title)).await.unwrap();
+    db.delete((DOCUMENT_NAME_TABLE, &title)).await.unwrap();
     if let Some(current_location) = &current_location {
         // Delete the old document if it exists
         document_table
