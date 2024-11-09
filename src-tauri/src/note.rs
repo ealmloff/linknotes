@@ -5,6 +5,9 @@ use std::ops::Range;
 use std::path::PathBuf;
 use surrealdb::sql::Id;
 
+#[cfg(test)]
+use pretty_assertions::assert_eq;
+
 use crate::bert;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
 
@@ -165,7 +168,7 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
     let db = document_table.table().db();
     // First check if the document already exists
     let current_location: Option<ContextualDocumentLocation> =
-    db.delete((DOCUMENT_NAME_TABLE, &title)).await.unwrap();
+        db.delete((DOCUMENT_NAME_TABLE, &title)).await.unwrap();
     if let Some(current_location) = &current_location {
         // Delete the old document if it exists
         document_table
@@ -191,11 +194,11 @@ pub async fn read_note(
         .ok_or(DocumentDoesNotExistError)?;
     let note: ContextualDocument = document_table.select(location.document_id).await.unwrap();
     Ok(note)
-
 }
 
 #[tokio::test]
 async fn test_set_tags() {
+    use crate::note::save_note;
     use crate::workspace::{
         delete_workspace, files_in_workspace, load_workspace, unload_workspace,
     };
@@ -207,23 +210,82 @@ async fn test_set_tags() {
     let workspace = load_workspace(temp);
     let title = "test-note".to_string();
     let text = "test note".to_string();
-    add_note(title.clone(), text.clone(), workspace).await;
-    let tags = vec![Tag {
-        name: "test".to_string(),
-        manual: true,
-    }];
+    save_note(title.clone(), text.clone(), workspace).await;
+    let tags = vec![
+        Tag {
+            name: "tag1".to_string(),
+            manual: true,
+        },
+        Tag {
+            name: "tag2".to_string(),
+            manual: true,
+        },
+    ];
     set_tags(title.clone(), tags.clone(), workspace)
         .await
         .unwrap();
+
+    let title2 = "my-other-test-note".to_string();
+    let text2 = "testing other note".to_string();
+    save_note(title2.clone(), text2.clone(), workspace).await;
+    let tags2 = vec![
+        Tag {
+            name: "tag2".to_string(),
+            manual: true,
+        },
+        Tag {
+            name: "tag3".to_string(),
+            manual: true,
+        },
+    ];
+    set_tags(title2.clone(), tags2.clone(), workspace)
+        .await
+        .unwrap();
+
     let notes = files_in_workspace(workspace).await;
 
     assert_eq!(
         notes,
-        vec![ContextualDocument {
-            document: Document::from_parts(title, text),
-            tags
-        }]
+        vec![
+            ContextualDocument {
+                document: Document::from_parts(title, text.clone()),
+                tags
+            },
+            ContextualDocument {
+                document: Document::from_parts(title2, text2.clone()),
+                tags: tags2
+            }
+        ]
     );
+
+    let results =
+        crate::search::search("test".to_string(), vec!["tag2".to_string()], 10, workspace).await;
+    assert_eq!(results.len(), 2);
+    assert_eq!(results[0].title, "test-note");
+    assert_eq!(results[0].character_range, 0..text.len());
+    assert_eq!(results[1].title, "my-other-test-note");
+    assert_eq!(results[1].character_range, 0..text2.len());
+
+    let results = crate::search::search(
+        "test".to_string(),
+        vec!["tag1".to_string(), "tag2".to_string()],
+        10,
+        workspace,
+    )
+    .await;
+    assert_eq!(results.len(), 1);
+    assert_eq!(results[0].title, "test-note");
+    assert_eq!(results[0].character_range, 0..text.len());
+
+    let results = crate::search::search(
+        "my note is here".to_string(),
+        vec!["testing".to_string()],
+        10,
+        workspace,
+    )
+    .await;
+    assert!(results.is_empty());
+
     delete_workspace(workspace);
     unload_workspace(workspace);
 }

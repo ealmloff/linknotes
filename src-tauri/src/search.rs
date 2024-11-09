@@ -1,6 +1,7 @@
 use kalosm::language::*;
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
+use surrealdb::sql::Id;
 
 use crate::bert;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
@@ -13,14 +14,44 @@ pub struct SearchResult {
 }
 
 /// Search for some text in the notes. Returns a list of results with the distance, path and character range of each result.
+///
+/// The results that are returned will only contain documents with  **all** of the tags.
 #[tauri::command]
-pub async fn search(text: String, results: usize, workspace_id: WorkspaceId) -> Vec<SearchResult> {
+pub async fn search(
+    text: String,
+    tags: Vec<String>,
+    results: usize,
+    workspace_id: WorkspaceId,
+) -> Vec<SearchResult> {
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let bert = bert().await.unwrap();
     let embedding = bert.embed(text).await.unwrap();
+    let mut documents_with_all_tags = document_table
+        .table()
+        .db()
+        .query(dbg!(format!(
+            "SELECT meta::id(id) as id FROM {} WHERE tags.name CONTAINSALL {}",
+            document_table.table().table(),
+            serde_json::to_string(&tags).unwrap()
+        )))
+        .await
+        .unwrap();
+
+    #[derive(Serialize, Deserialize)]
+    struct MetaId {
+        id: String,
+    }
+
+    let documents_with_all_tags: Vec<MetaId> = documents_with_all_tags.take(0).unwrap();
     let nearest = document_table
-        .select_nearest(embedding, results)
+        .search(embedding)
+        .with_results(results)
+        .with_filter(
+            documents_with_all_tags
+                .into_iter()
+                .map(|id| Id::String(id.id)),
+        )
         .await
         .unwrap();
 

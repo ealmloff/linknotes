@@ -1,5 +1,5 @@
 use kalosm::language::*;
-use note::{save_note, read_note, remove_note, set_tags, ContextualDocument};
+use note::{read_note, remove_note, save_note, set_tags, ContextualDocument};
 use search::search;
 use std::{
     num::NonZero,
@@ -10,9 +10,12 @@ use workspace::{
     delete_workspace, files_in_workspace, get_workspace_id, load_workspace, unload_workspace,
 };
 
+#[cfg(test)]
+use pretty_assertions::assert_eq;
+
+mod classifier;
 mod note;
 mod search;
-mod classifier;
 mod workspace;
 
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();
@@ -66,7 +69,7 @@ async fn test_notes() {
     _ = std::fs::remove_dir_all(&workspace_path);
     let workspace = load_workspace(workspace_path);
 
-    add_note(
+    save_note(
         "mynote".to_string(),
         "my note is here".to_string(),
         workspace,
@@ -74,13 +77,14 @@ async fn test_notes() {
     .await;
     remove_note("mynote".to_string(), workspace).await;
 
-    add_note(
+    save_note(
         "search-note".to_string(),
         "my note is here".to_string(),
         workspace,
     )
     .await;
-    let results = crate::search::search("my note is here".to_string(), 10, workspace).await;
+    let results =
+        crate::search::search("my note is here".to_string(), Vec::new(), 10, workspace).await;
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].title, "search-note");
     assert_eq!(results[0].character_range, 0..15);
