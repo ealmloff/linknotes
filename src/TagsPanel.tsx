@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Tag from './Tag';
 
-const TagsPanel: React.FC = () => {
+interface TagsPanelProps {
+  onTagClick: (tag: string) => void;
+}
+
+const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -39,11 +43,11 @@ const TagsPanel: React.FC = () => {
   return (
     <div className="tags-panel">
       <div className="tags-list">
-        <Tag title="Tag1" colorClass="tag-color-1" />
-        <Tag title="Tag2" colorClass="tag-color-2" />
-        <Tag title="Tag3" colorClass="tag-color-3" />
-        <Tag title="Tag4" colorClass="tag-color-4" />
-        <Tag title="Tag5" colorClass="tag-color-5" />
+        <Tag title="Tag1" colorClass="tag-color-1" onClick={onTagClick} />
+        <Tag title="Tag2" colorClass="tag-color-2" onClick={onTagClick} />
+        <Tag title="Tag3" colorClass="tag-color-3" onClick={onTagClick} />
+        <Tag title="Tag4" colorClass="tag-color-4" onClick={onTagClick} />
+        <Tag title="Tag5" colorClass="tag-color-5" onClick={onTagClick} />
       </div>
       <div className="menu-dots" onClick={toggleMenu}>⋮</div>
       {isMenuOpen && (

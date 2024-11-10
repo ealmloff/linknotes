@@ -36,6 +36,7 @@ const TextEditor: React.FC = () => {
   const [value, setValue] = useState<Descendant[]>(INITIAL_VALUE);
   const [title, setTitle] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, tags: { name: string, manual: boolean }[] }[]>([]);
   const [workspaceId, setWorkspaceId] = useState<number>(0);
 
@@ -207,6 +208,17 @@ const TextEditor: React.FC = () => {
     }
   };
 
+  const handleTagClick = (tag: string) => {
+    setSelectedTags(prevTags => {
+      if (prevTags.includes(tag)) {
+        return prevTags.filter(t => t !== tag);
+      } else {
+        return [...prevTags, tag];
+      }
+    });
+    setSearchQuery(tag); // Update search query when a tag is clicked
+  };
+
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -222,9 +234,11 @@ const TextEditor: React.FC = () => {
     <div className="text-editor">
       <ToastContainer />
       <div className="editor-header">
-        <Search />
-        <button onClick={handleNewNote} className="new-note-btn">New +</button>
+        <div className="search-wrapper">
+          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        </div>
         <div className="editor-title">LinkedNotes</div>
+        <button onClick={handleNewNote} className="new-note-btn">New +</button>
         <button onClick={handleSaveNote} className="save-note-btn">Save</button>
       </div>
       <div className="editor-body">
@@ -253,7 +267,7 @@ const TextEditor: React.FC = () => {
                 placeholder="Title"
                 className="title-input"
               />
-              <TagsPanel />
+              <TagsPanel onTagClick={handleTagClick} />
             </div>
           </div>
           <Slate 
