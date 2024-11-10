@@ -5,6 +5,8 @@ import { HistoryEditor, withHistory } from 'slate-history';
 import { invoke } from "@tauri-apps/api/core";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Search from './Search';
+import TagsPanel from './TagsPanel';
 
 // Type definitions
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -205,7 +207,6 @@ const TextEditor: React.FC = () => {
     }
   };
 
-
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -217,60 +218,56 @@ const TextEditor: React.FC = () => {
     }
   }, []);
 
-
   return (
     <div className="text-editor">
       <ToastContainer />
       <div className="editor-header">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search..."
-          className="search-input"
-        />
+        <Search />
         <button onClick={handleNewNote} className="new-note-btn">New +</button>
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleSaveNote} className="save-note-btn">Save</button>
       </div>
       <div className="editor-body">
-      <div className="sidepanel">
-  <h2>Your Notes</h2>
-  {savedNotes.length > 0 ? (
-    <ul>
-      {savedNotes.map((note, index) => (
-        <li key={index} onClick={() => handleNoteSelect(note.title)}>
-          <strong>{note.title} with tags {note.tags.map(tag => tag.name).join(', ')}</strong>
-          <span>{note.content.substring(0, 50)}...</span>
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p>No notes saved yet.</p>
-  )}
-</div>
+        <div className="sidepanel">
+          <h2>Your Notes</h2>
+          {savedNotes.length > 0 ? (
+            <ul>
+              {savedNotes.map((note, index) => (
+                <li key={index} onClick={() => handleNoteSelect(note.title)}>
+                  <strong>{note.title} with tags {note.tags.map(tag => tag.name).join(', ')}</strong>
+                  <span>{note.content.substring(0, 50)}...</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No notes saved yet.</p>
+          )}
+        </div>
         <div className="editor-content">
           <div className="editor-input">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title"
-              className="title-input"
-            />
+            <div className="title-tags-container">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title"
+                className="title-input"
+              />
+              <TagsPanel />
+            </div>
           </div>
           <Slate 
-  editor={editor} 
-  initialValue={value} 
-  onChange={(newValue) => setValue(newValue)}
->
-  <Editable
-    renderElement={renderElement}
-    placeholder="Start typing your note here..."
-    className="editable"
-    onKeyDown={handleKeyDown}
-  />
-</Slate>
+            editor={editor} 
+            initialValue={value} 
+            onChange={(newValue) => setValue(newValue)}
+          >
+            <Editable
+              renderElement={renderElement}
+              placeholder="Start typing your note here..."
+              className="editable"
+              onKeyDown={handleKeyDown}
+            />
+          </Slate>
         </div>
       </div>
     </div>
