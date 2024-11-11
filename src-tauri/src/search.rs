@@ -23,6 +23,8 @@ pub async fn search(
     results: usize,
     workspace_id: WorkspaceId,
 ) -> Vec<SearchResult> {
+    println!("Search called with text {:?} and tags {:?}", text, tags);
+    tracing::info!("Search called with text {:?} and tags {:?}", text, tags);
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let bert = bert().await.unwrap();
