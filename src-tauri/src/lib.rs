@@ -1,5 +1,5 @@
 use kalosm::language::*;
-use note::{read_note, remove_note, save_note, set_tags, ContextualDocument};
+use note::{read_note, remove_note, save_note, set_tags, get_tags, ContextualDocument};
 use search::search;
 use std::{
     num::NonZero,
@@ -48,6 +48,7 @@ pub fn run() {
             get_workspace_id,
             save_note,
             set_tags,
+            get_tags,
             remove_note,
             search,
             read_note,

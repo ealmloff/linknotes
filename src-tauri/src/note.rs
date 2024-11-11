@@ -78,6 +78,24 @@ pub async fn set_tags(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn get_tags(
+    title: String,
+    workspace_id: WorkspaceId,
+) -> Result<Vec<Tag>, DocumentDoesNotExistError> {
+    tracing::info!("get_tags called with title {:?}", title);
+    let workspace = get_workspace_ref(workspace_id);
+    let document_table = workspace.document_table().await.unwrap();
+    let db = document_table.table().db();
+    let location: ContextualDocumentLocation = db
+        .select((DOCUMENT_NAME_TABLE, &title))
+        .await
+        .unwrap()
+        .ok_or(DocumentDoesNotExistError)?;
+    let note: ContextualDocument = document_table.select(location.document_id).await.unwrap();
+    Ok(note.tags)
+}
+
 /// Save a note with a title, and contents in a workspace. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
 pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
