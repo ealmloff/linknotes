@@ -7,6 +7,8 @@ interface TagsPanelProps {
 
 const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [tags, setTags] = useState<string[]>(['Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']);
+  const [customTag, setCustomTag] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
@@ -40,21 +42,36 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
     };
   }, [isMenuOpen]);
 
+  const handleCustomTagInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomTag(event.target.value);
+  };
+
+  const addCustomTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && customTag.trim() !== '') {
+      setTags([customTag, ...tags]);
+      setCustomTag('');
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
     <div className="tags-panel">
       <div className="tags-list">
-        <Tag title="Tag1" colorClass="tag-color-1" onClick={onTagClick} />
-        <Tag title="Tag2" colorClass="tag-color-2" onClick={onTagClick} />
-        <Tag title="Tag3" colorClass="tag-color-3" onClick={onTagClick} />
-        <Tag title="Tag4" colorClass="tag-color-4" onClick={onTagClick} />
-        <Tag title="Tag5" colorClass="tag-color-5" onClick={onTagClick} />
+        {tags.map((tag, index) => (
+          <Tag key={index} title={tag} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag)} />
+        ))}
       </div>
       <div className="menu-dots" onClick={toggleMenu}>⋮</div>
       {isMenuOpen && (
         <div className="dropdown-menu" ref={menuRef}>
-          <div className="dropdown-item">Option 1</div>
-          <div className="dropdown-item">Option 2</div>
-          <div className="dropdown-item">Option 3</div>
+          <input
+            type="text"
+            className="custom-tag-input"
+            placeholder="Add a custom tag"
+            value={customTag}
+            onChange={handleCustomTagInput}
+            onKeyDown={addCustomTag}
+          />
         </div>
       )}
     </div>
