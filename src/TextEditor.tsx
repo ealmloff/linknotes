@@ -39,6 +39,7 @@ const TextEditor: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, tags: { name: string, manual: boolean }[] }[]>([]);
   const [workspaceId, setWorkspaceId] = useState<number>(0);
+  const [tags, setTags] = useState<{ name: string, manual: boolean }[]>([]);
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -104,6 +105,16 @@ const TextEditor: React.FC = () => {
     }
   };
 
+  const loadTags = async (noteTitle: string) => {
+    try {
+      const tags = await invoke('get_tags', { title: noteTitle, workspaceId }) as { name: string, manual: boolean }[];
+      setTags(tags);
+    } catch (error) {
+      console.error('Failed to load tags:', error);
+      toast.error('Failed to load tags');
+    }
+  };
+
   // Event handlers
   const handleNewNote = () => {
     setTitle('');
@@ -154,6 +165,8 @@ const TextEditor: React.FC = () => {
           return [...prevNotes, { title: note.title, content: extractedText, tags: note.tags }];
         }
       });
+
+      await loadTags(note.title);
   
       toast.success(`Note saved successfully`);
     } catch (error) {
@@ -190,6 +203,8 @@ const TextEditor: React.FC = () => {
       editor.children = newValue;
       Transforms.select(editor, { path: [0, 0], offset: 0 });
 
+      await loadTags(title);
+
       toast.success(`Loaded note: ${title}`);
     } catch (error) {
       console.error('Failed to load note:', error);
@@ -217,6 +232,20 @@ const TextEditor: React.FC = () => {
       }
     });
     setSearchQuery(tag); // Update search query when a tag is clicked
+  };
+
+  const handleAddTag = async (newTag: string) => {
+    try {
+      await invoke('set_tags', {
+        title,
+        tags: [...tags, { name: newTag, manual: true }],
+        workspaceId,
+      });
+      await loadTags(title);
+    } catch (error) {
+      console.error('Failed to add tag:', error);
+      toast.error('Failed to add tag');
+    }
   };
 
   // Render functions
@@ -267,7 +296,7 @@ const TextEditor: React.FC = () => {
                 placeholder="Title"
                 className="title-input"
               />
-              <TagsPanel onTagClick={handleTagClick} />
+              <TagsPanel onTagClick={handleTagClick} tags={tags} onAddTag={handleAddTag} />
             </div>
           </div>
           <Slate 
