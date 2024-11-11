@@ -3,11 +3,12 @@ import Tag from './Tag';
 
 interface TagsPanelProps {
   onTagClick: (tag: string) => void;
+  tags: { name: string, manual: boolean }[];
+  onAddTag: (tag: string) => void;
 }
 
-const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
+const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [tags, setTags] = useState<string[]>(['Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5']);
   const [customTag, setCustomTag] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -48,17 +49,21 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
 
   const addCustomTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter' && customTag.trim() !== '') {
-      setTags([customTag, ...tags]);
+      onAddTag(customTag);
       setCustomTag('');
       setIsMenuOpen(false);
     }
   };
 
+  const manualTags = tags.filter(tag => tag.manual);
+  const displayedTags = manualTags.slice(0, 5);
+  const remainingTags = manualTags.slice(5);
+
   return (
     <div className="tags-panel">
       <div className="tags-list">
-        {tags.map((tag, index) => (
-          <Tag key={index} title={tag} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag)} />
+        {displayedTags.map((tag, index) => (
+          <Tag key={index} title={tag.name} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag.name)} />
         ))}
       </div>
       <div className="menu-dots" onClick={toggleMenu}>⋮</div>
@@ -72,6 +77,9 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick }) => {
             onChange={handleCustomTagInput}
             onKeyDown={addCustomTag}
           />
+          {remainingTags.map((tag, index) => (
+            <Tag key={index} title={tag.name} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag.name)} />
+          ))}
         </div>
       )}
     </div>
