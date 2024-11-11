@@ -6,12 +6,15 @@ use std::path::PathBuf;
 use std::sync::OnceLock;
 use surrealdb::{engine::local::RocksDb, Surreal};
 
-use crate::note::ContextualDocument;
+use crate::classifier::TagClassifier;
+use crate::note::{ContextualDocument, Tag};
 use crate::{bert, ContextualDocumentTable};
 
 pub struct Workspace {
     pub location: PathBuf,
     table: OnceLock<anyhow::Result<ContextualDocumentTable>>,
+    tags: RwLock<Vec<String>>,
+    classifier: RwLock<Option<TagClassifier>>,
     lock: tokio::sync::Mutex<()>,
 }
 
@@ -21,6 +24,8 @@ impl Workspace {
             location,
             table: OnceLock::new(),
             lock: tokio::sync::Mutex::const_new(()),
+            tags: RwLock::new(Vec::new()),
+            classifier: RwLock::new(None),
         }
     }
 
@@ -82,6 +87,47 @@ impl Workspace {
             let err = err.to_string();
             anyhow::anyhow!(err)
         })
+    }
+
+    pub fn get_tag_id(&self, tag: &str) -> u32 {
+        let mut tags_mut = self.tags.write();
+        match tags_mut.iter().position(|t| t == tag) {
+            Some(index) => index as u32,
+            None => {
+                let index = tags_mut.len() as u32;
+                tags_mut.push(tag.to_string());
+                index
+            }
+        }
+    }
+
+    pub fn get_tag_name(&self, id: u32) -> String {
+        let tag_read = self.tags.read();
+        tag_read[id as usize].clone()
+    }
+
+    pub fn tag_count(&self) -> usize {
+        let tag_read = self.tags.read();
+        tag_read.len()
+    }
+
+    pub fn retrain_classifier(&self) {
+        let mut classifier_mut = self.classifier.write();
+        classifier_mut.take();
+    }
+
+    pub async fn classify(&self, document: &ContextualDocument) -> anyhow::Result<Tag> {
+        let mut classifier_mut = self.classifier.write();
+        let mut classifier = classifier_mut.take();
+        if classifier.is_none() {
+            let document_table = self.document_table().await?;
+            let documents = document_table.table().select_all().await?;
+            classifier = Some(TagClassifier::new(self, &documents, |_| {}).await);
+        }
+        let classifier = classifier.unwrap();
+        let tag = classifier.classify(self, document).await;
+        *classifier_mut = Some(classifier);
+        Ok(tag)
     }
 }
 
