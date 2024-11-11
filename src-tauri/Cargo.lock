@@ -235,7 +235,7 @@ dependencies = [
  "rayon",
  "roaring",
  "tempfile",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -744,7 +744,7 @@ dependencies = [
  "glib",
  "libc",
  "once_cell",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -789,7 +789,7 @@ dependencies = [
  "rand_distr",
  "rayon",
  "safetensors",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "yoke",
  "zip 1.1.4",
 ]
@@ -811,7 +811,7 @@ checksum = "166a92826d615d98b205e346e52128fa0439f2ab3302587403fdc558b4219e19"
 dependencies = [
  "metal 0.27.0",
  "once_cell",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tracing",
 ]
 
@@ -830,7 +830,7 @@ dependencies = [
  "rayon",
  "safetensors",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -873,7 +873,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -920,7 +920,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smol_str",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -943,7 +943,7 @@ dependencies = [
  "serde_with",
  "smol_str",
  "stacker",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -959,7 +959,7 @@ dependencies = [
  "serde_with",
  "smol_str",
  "stacker",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "unicode-security",
 ]
 
@@ -1226,7 +1226,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-fs",
  "tauri-plugin-shell",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "tracing-subscriber",
@@ -2032,7 +2032,7 @@ dependencies = [
  "image 0.24.9",
  "serde",
  "serde_json",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "xml-rs",
  "zip 0.6.6",
 ]
@@ -3005,7 +3005,7 @@ dependencies = [
  "once_cell",
  "pin-project-lite",
  "smallvec",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3041,7 +3041,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "smallvec",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3296,7 +3296,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tungstenite 0.24.0",
  "url",
  "which",
@@ -3401,7 +3401,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "serde_json",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "ureq",
 ]
 
@@ -4035,7 +4035,7 @@ dependencies = [
  "combine",
  "jni-sys",
  "log",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "walkdir",
  "windows-sys 0.45.0",
 ]
@@ -4082,7 +4082,7 @@ dependencies = [
  "jsonptr",
  "serde",
  "serde_json",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -4098,7 +4098,7 @@ dependencies = [
 [[package]]
 name = "kalosm"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "arroy",
@@ -4121,7 +4121,7 @@ dependencies = [
  "rand 0.8.5",
  "serde",
  "surrealdb",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "tokio",
  "tracing",
 ]
@@ -4129,7 +4129,7 @@ dependencies = [
 [[package]]
 name = "kalosm-common"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -4148,7 +4148,7 @@ dependencies = [
 [[package]]
 name = "kalosm-language"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "arroy",
@@ -4192,7 +4192,7 @@ dependencies = [
  "srx",
  "tempfile",
  "texting_robots",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "tokenizers",
  "tokio",
  "tokio-util",
@@ -4204,7 +4204,7 @@ dependencies = [
 [[package]]
 name = "kalosm-language-model"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4222,7 +4222,7 @@ dependencies = [
  "rayon",
  "safetensors",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokenizers",
  "tokio",
  "tracing",
@@ -4231,7 +4231,7 @@ dependencies = [
 [[package]]
 name = "kalosm-learning"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -4248,7 +4248,7 @@ dependencies = [
 [[package]]
 name = "kalosm-learning-macro"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "quote",
  "syn 2.0.87",
@@ -4257,7 +4257,7 @@ dependencies = [
 [[package]]
 name = "kalosm-llama"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4280,7 +4280,7 @@ dependencies = [
 [[package]]
 name = "kalosm-ocr"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -4299,7 +4299,7 @@ dependencies = [
 [[package]]
 name = "kalosm-parse-macro"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4309,7 +4309,7 @@ dependencies = [
 [[package]]
 name = "kalosm-sample"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "kalosm-parse-macro",
@@ -4319,7 +4319,7 @@ dependencies = [
 [[package]]
 name = "kalosm-sound"
 version = "0.3.4"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -4350,7 +4350,7 @@ dependencies = [
 [[package]]
 name = "kalosm-streams"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "futures-util",
  "image 0.24.9",
@@ -4361,7 +4361,7 @@ dependencies = [
 [[package]]
 name = "kalosm-vision"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "image 0.24.9",
  "kalosm-ocr",
@@ -4605,7 +4605,7 @@ dependencies = [
  "ndarray",
  "num-traits",
  "rand 0.8.5",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -4629,7 +4629,7 @@ dependencies = [
  "anyhow",
  "num-traits",
  "rand 0.8.5",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -4905,7 +4905,7 @@ checksum = "59bb584eaeeab6bd0226ccf3509a69d7936d148cf3d036ad350abe35e8c6856e"
 dependencies = [
  "miette-derive",
  "once_cell",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "unicode-width",
 ]
 
@@ -5010,7 +5010,7 @@ dependencies = [
  "once_cell",
  "png 0.17.14",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "windows-sys 0.59.0",
 ]
 
@@ -5089,7 +5089,7 @@ dependencies = [
  "log",
  "ndk-sys 0.5.0+25.2.9519653",
  "num_enum",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -5104,7 +5104,7 @@ dependencies = [
  "ndk-sys 0.6.0+11769913",
  "num_enum",
  "raw-window-handle",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -5765,7 +5765,7 @@ dependencies = [
  "js-sys",
  "ndarray",
  "ort-sys",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tracing",
  "web-sys",
 ]
@@ -6812,7 +6812,7 @@ dependencies = [
 [[package]]
 name = "rbert"
 version = "0.3.3"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6871,7 +6871,7 @@ checksum = "ba009ff324d1fc1b900bd1fdb31564febe58a8ccc8a6fdbb93b543d33b13ca43"
 dependencies = [
  "getrandom 0.2.15",
  "libredox",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -7045,7 +7045,7 @@ dependencies = [
  "roaring",
  "rust_decimal",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "uuid",
 ]
 
@@ -7202,7 +7202,7 @@ dependencies = [
 [[package]]
 name = "rphi"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7343,9 +7343,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.38.39"
+version = "0.38.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "375116bee2be9ed569afe2154ea6a99dfdffd257f533f187498c2a8f5feaf4ee"
+checksum = "99e4ea3e1cdc4b559b8e5650f9c8e5998e3e5c1343b4eaf034565f32318d63c0"
 dependencies = [
  "bitflags 2.6.0",
  "errno",
@@ -7426,7 +7426,7 @@ checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 [[package]]
 name = "rwhisper"
 version = "0.3.5"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "accelerate-src",
  "anyhow",
@@ -7453,7 +7453,7 @@ dependencies = [
 [[package]]
 name = "rwuerstchen"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7623,7 +7623,7 @@ dependencies = [
 [[package]]
 name = "segment-anything-rs"
 version = "0.3.2"
-source = "git+https://github.com/floneum/floneum#90b6af9e9fcdd13007586eb5771decb24004c43b"
+source = "git+https://github.com/floneum/floneum#9ec819c0165c8784ff17995e16cc28bc5188bf45"
 dependencies = [
  "anyhow",
  "candle-core",
@@ -7722,7 +7722,7 @@ checksum = "f0bf1ba0696ccf0872866277143ff1fd14d22eec235d2b23702f95e6660f7dfa"
 dependencies = [
  "log",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "xml-rs",
 ]
 
@@ -7969,7 +7969,7 @@ checksum = "adc4e5204eb1910f40f9cfa375f6f05b68c3abac4b6fd879c8ff5e7ae8a0a085"
 dependencies = [
  "num-bigint",
  "num-traits",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "time 0.3.36",
 ]
 
@@ -8190,7 +8190,7 @@ dependencies = [
  "serde",
  "serde-xml-rs",
  "serde_regex",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -8227,7 +8227,7 @@ dependencies = [
  "byteorder",
  "memchr",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -8338,7 +8338,7 @@ dependencies = [
  "serde_json",
  "surrealdb-core 1.5.3",
  "surrealdb-core 2.0.0-1.5.5",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokio",
  "tokio-tungstenite",
  "tracing",
@@ -8407,7 +8407,7 @@ dependencies = [
  "storekey",
  "surrealdb-derive",
  "surrealdb-jsonwebtoken",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "trice",
@@ -8488,7 +8488,7 @@ dependencies = [
  "surrealdb-derive",
  "surrealdb-jsonwebtoken",
  "tempfile",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokio",
  "tracing",
  "trice",
@@ -8668,7 +8668,7 @@ dependencies = [
  "byteorder",
  "enum-as-inner",
  "libc",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "walkdir",
 ]
 
@@ -8827,7 +8827,7 @@ dependencies = [
  "tauri-runtime",
  "tauri-runtime-wry",
  "tauri-utils",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "tokio",
  "tray-icon",
  "url",
@@ -8880,7 +8880,7 @@ dependencies = [
  "sha2",
  "syn 2.0.87",
  "tauri-utils",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "time 0.3.36",
  "url",
  "uuid",
@@ -8934,7 +8934,7 @@ dependencies = [
  "serde_repr",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "url",
  "uuid",
 ]
@@ -8956,7 +8956,7 @@ dependencies = [
  "shared_child",
  "tauri",
  "tauri-plugin",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "tokio",
 ]
 
@@ -8974,7 +8974,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tauri-utils",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "url",
  "windows 0.58.0",
 ]
@@ -9034,7 +9034,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "swift-rs",
- "thiserror 2.0.1",
+ "thiserror 2.0.3",
  "toml 0.8.2",
  "url",
  "urlpattern",
@@ -9108,7 +9108,7 @@ dependencies = [
  "nom 7.1.3",
  "percent-encoding",
  "regex",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "url",
 ]
 
@@ -9126,27 +9126,27 @@ checksum = "8eaa81235c7058867fa8c0e7314f33dcce9c215f535d1913822a2b3f5e289f3c"
 
 [[package]]
 name = "thiserror"
-version = "1.0.68"
+version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02dd99dc800bbb97186339685293e1cc5d9df1f8fae2d0aecd9ff1c77efea892"
+checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl 1.0.68",
+ "thiserror-impl 1.0.69",
 ]
 
 [[package]]
 name = "thiserror"
-version = "2.0.1"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07c1e40dd48a282ae8edc36c732cbc219144b87fb6a4c7316d611c6b1f06ec0c"
+checksum = "c006c85c7651b3cf2ada4584faa36773bd07bac24acfb39f3c431b36d7e667aa"
 dependencies = [
- "thiserror-impl 2.0.1",
+ "thiserror-impl 2.0.3",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.68"
+version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7c61ec9a6f64d2793d8a45faba21efbe3ced62a886d44c36a009b2b519b4c7e"
+checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9155,9 +9155,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.1"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "874aa7e446f1da8d9c3a5c95b1c5eb41d800045252121dc7f8e0ba370cee55f5"
+checksum = "f077553d607adc1caf65430528a576c757a71ed73944b66ebb58ef2bbd243568"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9287,7 +9287,7 @@ dependencies = [
  "serde",
  "serde_json",
  "spm_precompiled",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "unicode-normalization-alignments",
  "unicode-segmentation",
  "unicode_categories",
@@ -9525,7 +9525,7 @@ dependencies = [
  "once_cell",
  "png 0.17.14",
  "serde",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "windows-sys 0.59.0",
 ]
 
@@ -9561,7 +9561,7 @@ dependencies = [
  "rand 0.8.5",
  "rustls 0.21.12",
  "sha1",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "url",
  "utf-8",
 ]
@@ -9580,7 +9580,7 @@ dependencies = [
  "log",
  "rand 0.8.5",
  "sha1",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "utf-8",
 ]
 
@@ -9901,7 +9901,7 @@ dependencies = [
  "ndarray",
  "ort",
  "pin-project",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "typed-builder",
 ]
 
@@ -10171,7 +10171,7 @@ version = "0.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3a3e2eeb58f82361c93f9777014668eb3d07e7d174ee4c819575a9208011886"
 dependencies = [
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "windows 0.58.0",
  "windows-core 0.58.0",
 ]
@@ -10673,7 +10673,7 @@ dependencies = [
  "sha2",
  "soup3",
  "tao-macros",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "url",
  "webkit2gtk",
  "webkit2gtk-sys",
@@ -10697,7 +10697,7 @@ dependencies = [
  "pharos",
  "rustc_version",
  "send_wrapper",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -10886,7 +10886,7 @@ dependencies = [
  "displaydoc",
  "indexmap 2.6.0",
  "num_enum",
- "thiserror 1.0.68",
+ "thiserror 1.0.69",
 ]
 
 [[package]]

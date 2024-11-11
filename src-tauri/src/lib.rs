@@ -92,15 +92,12 @@ async fn test_notes() {
     let notes = files_in_workspace(workspace).await;
     assert_eq!(notes.len(), 1);
     assert_eq!(
-        notes,
-        vec![ContextualDocument {
-            document: Document::from_parts(
-                "search-note".to_string(),
-                "my note is here".to_string()
-            ),
-            tags: vec![]
-        }]
+        notes[0].document,
+        Document::from_parts("search-note".to_string(), "my note is here".to_string())
     );
+    assert_eq!(notes[0].tags.len(), 1);
+    assert_eq!(notes[0].tags[0].manual, false);
+    assert!(["Math", "Computer Science"].contains(&notes[0].tags[0].name.as_str()));
 
     delete_workspace(workspace);
     unload_workspace(workspace);

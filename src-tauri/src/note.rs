@@ -32,8 +32,8 @@ impl AsRef<Document> for ContextualDocument {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Tag {
-    name: String,
-    manual: bool,
+    pub name: String,
+    pub manual: bool,
 }
 
 const DOCUMENT_NAME_TABLE: &str = "document_paths";
@@ -56,6 +56,7 @@ pub async fn set_tags(
 ) -> Result<(), DocumentDoesNotExistError> {
     tracing::info!("set_tags called with title {:?} and tags {:?}", title, tags);
     let workspace = get_workspace_ref(workspace_id);
+    workspace.retrain_classifier();
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
     let table_name = document_table.table().table();
@@ -127,7 +128,12 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
             .unwrap();
     }
 
-    let contextual = ContextualDocument { document, tags };
+    tags.retain(|tag| tag.manual);
+    // Classify the document and add an automatic tag
+    let mut contextual = ContextualDocument { document, tags };
+    let tag = workspace.classify(&contextual).await.unwrap();
+    contextual.tags.push(tag);
+
     tracing::info!("Inserting document with id: {:?}", contextual);
     let document_id = document_table
         .insert_with_chunks(contextual, chunks)
