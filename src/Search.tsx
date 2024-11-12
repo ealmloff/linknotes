@@ -12,6 +12,7 @@ interface SearchProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   workspace_id: WorkspaceId; // Use WorkspaceId type here
+  handleNoteSelect: (title: string) => void; // Add handleNoteSelect as a prop
 }
 
 interface SearchResult {
@@ -20,7 +21,7 @@ interface SearchResult {
   character_range: [number, number];
 }
 
-const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery, workspace_id }) => {
+const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery, workspace_id, handleNoteSelect }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -44,22 +45,32 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
     if (event.key === 'Escape') {
       setIsDropdownOpen(false);
     }
+    else if (event.key === 'Enter') {
+      performSearch(searchQuery, selectedTags);
+    }
+
   };
 
   const performSearch = async (query: string, tags: string[]) => {
-  try {
-    const results = await invoke('search', {
-      text: query,
-      tags: tags,
-      results: 10,
-      workspaceId: workspace_id // Use the actual workspace ID
-    }) as SearchResult[];
-    setSearchResults(results);
-  } catch (error) {
-    console.error('Failed to perform search:', error);
-    toast.error(`Failed to perform search ${error}`);
-  }
-};
+    try {
+      const results = await invoke('search', {
+        text: query,
+        tags: tags,
+        results: 10,
+        workspaceId: workspace_id // Use the actual workspace ID
+      }) as SearchResult[];
+
+      // Remove duplicate titles
+      const uniqueResults = results.filter((result, index, self) =>
+        index === self.findIndex((r) => r.title === result.title)
+      );
+
+      setSearchResults(uniqueResults);
+    } catch (error) {
+      console.error('Failed to perform search:', error);
+      toast.error(`Failed to perform search ${error}`);
+    }
+  };
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
@@ -85,7 +96,6 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
         value={searchQuery}
         onChange={handleSearchChange}
         className="search-input"
-        // onKeyDown={handleKeyDown}
         onFocus={() => setIsDropdownOpen(true)}
       />
       {isDropdownOpen && (
@@ -99,8 +109,8 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
           </div>
           <div className="search-results">
             {searchResults.map((result, index) => (
-              <div key={index} className="search-result">
-                {result.title} (Distance: {result.distance})
+              <div key={index} className="search-result" onClick={() => handleNoteSelect(result.title)}>
+                {result.title}
               </div>
             ))}
           </div>

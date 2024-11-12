@@ -170,6 +170,20 @@ button:hover {
   padding: 10px;
 }
 
+/* Add styles for the search results */
+.search-result {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  border-radius: 4px;
+}
+
+.search-result:hover {
+  background-color: #e6e6e6;
+  transform: translateY(-2px);
+}
+
+
 .search-tag {
   display: inline-block;
   padding: 4px 10px;
@@ -546,5 +560,14 @@ button:hover {
 
   .search-tag:hover {
     background-color: #555;
+  }
+  
+  .search-result {
+    background-color: #333;
+    color: #f6f6f6;
+  }
+
+  .search-result:hover {
+    background-color: #444;
   }
 }

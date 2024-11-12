@@ -120,13 +120,13 @@ const TextEditor: React.FC = () => {
 
   // Event handlers
   const handleNewNote = () => {
-  setTitle('');
-  setValue(INITIAL_VALUE);
-  setTags([]); // Clear the tags
-  editor.children = INITIAL_VALUE;
-  Transforms.select(editor, { path: [0, 0], offset: 0 });
-  toast.success('New note created');
-};
+    setTitle('');
+    setValue(INITIAL_VALUE);
+    setTags([]); // Clear the tags
+    editor.children = INITIAL_VALUE;
+    Transforms.select(editor, { path: [0, 0], offset: 0 });
+    toast.success('New note created');
+  };
 
   const handleSaveNote = useCallback(async () => {
     toast.info('Preparing to save note');
@@ -268,7 +268,7 @@ const TextEditor: React.FC = () => {
       <ToastContainer />
       <div className="editor-header">
         <div className="search-wrapper">
-          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} workspace_id={workspaceId} />
+          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} workspace_id={workspaceId} handleNoteSelect={handleNoteSelect} />
         </div>
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleNewNote} className="new-note-btn">New +</button>
