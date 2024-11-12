@@ -56,9 +56,8 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag }) => 
   };
 
   // Extract only manual tags and limit the displayed tags to the last 5 added
-  const manualTags = tags.filter(tag => tag.manual);
-  const displayedTags = manualTags.slice(-5); // Only the last 5 tags are displayed
-  const remainingTags = manualTags.slice(0, -5); // Older tags go into the dropdown menu
+  const displayedTags = tags.slice(-5); // Only the last 5 tags are displayed
+  const remainingTags = tags.slice(0, -5); // Older tags go into the dropdown menu
 
   return (
     <div className="tags-panel">

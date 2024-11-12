@@ -277,7 +277,7 @@ const TextEditor: React.FC = () => {
             <ul>
               {savedNotes.map((note, index) => (
                 <li key={index} onClick={() => handleNoteSelect(note.title)}>
-                  <strong>{note.title} with tags {note.tags.map(tag => tag.name).join(', ')}</strong>
+                  <strong>{note.title}</strong>
                   <span>{note.content.substring(0, 50)}...</span>
                 </li>
               ))}

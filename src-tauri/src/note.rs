@@ -30,10 +30,22 @@ impl AsRef<Document> for ContextualDocument {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, Ord)]
 pub struct Tag {
     pub name: String,
     pub manual: bool,
+}
+
+impl PartialEq for Tag {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
+impl PartialOrd for Tag {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.name.partial_cmp(&other.name)
+    }
 }
 
 const DOCUMENT_NAME_TABLE: &str = "document_paths";
@@ -51,7 +63,7 @@ pub struct DocumentDoesNotExistError;
 #[tauri::command]
 pub async fn set_tags(
     title: String,
-    tags: Vec<Tag>,
+    mut tags: Vec<Tag>,
     workspace_id: WorkspaceId,
 ) -> Result<(), DocumentDoesNotExistError> {
     tracing::info!("set_tags called with title {:?} and tags {:?}", title, tags);
@@ -65,6 +77,14 @@ pub async fn set_tags(
         .await
         .unwrap()
         .ok_or(DocumentDoesNotExistError)?;
+    let note: ContextualDocument = document_table
+        .select(location.document_id.clone())
+        .await
+        .unwrap();
+    let automatic_tags = note.tags.into_iter().filter(|tag| !tag.manual);
+    tags.extend(automatic_tags);
+    tags.sort();
+    tags.dedup();
     let id = location.document_id;
     db.query(format!(
         "UPDATE {}:{} SET tags = {}",

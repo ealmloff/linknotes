@@ -1,5 +1,5 @@
 use kalosm::language::*;
-use note::{read_note, remove_note, save_note, set_tags, get_tags, ContextualDocument};
+use note::{get_tags, read_note, remove_note, save_note, set_tags, ContextualDocument};
 use search::search;
 use std::{
     num::NonZero,
