@@ -268,7 +268,7 @@ const TextEditor: React.FC = () => {
       <ToastContainer />
       <div className="editor-header">
         <div className="search-wrapper">
-          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} workspaceId={workspaceId} />
+          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} workspace_id={workspaceId} />
         </div>
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleNewNote} className="new-note-btn">New +</button>

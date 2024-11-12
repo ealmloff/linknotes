@@ -11,7 +11,7 @@ interface SearchProps {
   selectedTags: string[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  workspaceId: WorkspaceId; // Use WorkspaceId type here
+  workspace_id: WorkspaceId; // Use WorkspaceId type here
 }
 
 interface SearchResult {
@@ -20,7 +20,7 @@ interface SearchResult {
   character_range: [number, number];
 }
 
-const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery, workspaceId }) => {
+const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery, workspace_id }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -47,32 +47,19 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
   };
 
   const performSearch = async (query: string, tags: string[]) => {
-    // try {
-    //   toast.info(`results for ${query} with tags ${tags}`);
-    //   const results = await invoke('search', {
-    //     text: query,
-    //     tags: tags,
-    //     results: 10,
-    //     workspace_id: workspaceId // Use the actual workspace ID
-    //   }) as SearchResult[];
-    //   setSearchResults(results);
-    // } catch (error) {
-    //   console.error('Failed to perform search:', error);
-    // }
-    try {
-    toast.info(`results for ${query} with tags ${tags}`);
+  try {
     const results = await invoke('search', {
       text: query,
-      tags: ["maybe", "does this work?"], // Temporary tags
-      results: 5,
-      workspace_id: workspaceId // Use the actual workspace ID
+      tags: tags,
+      results: 10,
+      workspaceId: workspace_id // Use the actual workspace ID
     }) as SearchResult[];
-      setSearchResults(results);
-      toast.info(`results ${results}`);
+    setSearchResults(results);
   } catch (error) {
     console.error('Failed to perform search:', error);
+    toast.error(`Failed to perform search ${error}`);
   }
-  };
+};
 
   useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);

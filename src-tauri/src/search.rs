@@ -13,22 +13,19 @@ pub struct SearchResult {
     pub character_range: Range<usize>,
 }
 
-/// Search for some text in the notes. Returns a list of results with the distance, path and character range of each result.
-///
-/// The results that are returned will only contain documents with  **all** of the tags.
 #[tauri::command]
 pub async fn search(
     text: String,
     tags: Vec<String>,
     results: usize,
     workspace_id: WorkspaceId,
-) -> Vec<SearchResult> {
+) -> Result<Vec<SearchResult>, String> {
     println!("Search called with text {:?} and tags {:?}", text, tags);
     tracing::info!("Search called with text {:?} and tags {:?}", text, tags);
     let workspace = get_workspace_ref(workspace_id);
-    let document_table = workspace.document_table().await.unwrap();
-    let bert = bert().await.unwrap();
-    let embedding = bert.embed(text).await.unwrap();
+    let document_table = workspace.document_table().await.map_err(|e| e.to_string())?;
+    let bert = bert().await.map_err(|e| e.to_string())?;
+    let embedding = bert.embed(text).await.map_err(|e| e.to_string())?;
     let mut documents_with_all_tags = document_table
         .table()
         .db()
@@ -38,14 +35,14 @@ pub async fn search(
             serde_json::to_string(&tags).unwrap()
         )))
         .await
-        .unwrap();
+        .map_err(|e| e.to_string())?;
 
     #[derive(Serialize, Deserialize)]
     struct MetaId {
         id: String,
     }
 
-    let documents_with_all_tags: Vec<MetaId> = documents_with_all_tags.take(0).unwrap();
+    let documents_with_all_tags: Vec<MetaId> = documents_with_all_tags.take(0).map_err(|e| e.to_string())?;
     let nearest = document_table
         .search(embedding)
         .with_results(results)
@@ -55,9 +52,9 @@ pub async fn search(
                 .map(|id| Id::String(id.id)),
         )
         .await
-        .unwrap();
+        .map_err(|e| e.to_string())?;
 
-    nearest
+    Ok(nearest
         .into_iter()
         .map(|result| {
             let title = result.record.document.title().to_string();
@@ -75,5 +72,5 @@ pub async fn search(
                 character_range,
             }
         })
-        .collect()
+        .collect())
 }
