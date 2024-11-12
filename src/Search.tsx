@@ -45,10 +45,6 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
     if (event.key === 'Escape') {
       setIsDropdownOpen(false);
     }
-    else if (event.key === 'Enter') {
-      performSearch(searchQuery, selectedTags);
-    }
-
   };
 
   const performSearch = async (query: string, tags: string[]) => {
