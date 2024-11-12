@@ -120,12 +120,13 @@ const TextEditor: React.FC = () => {
 
   // Event handlers
   const handleNewNote = () => {
-    setTitle('');
-    setValue(INITIAL_VALUE);
-    editor.children = INITIAL_VALUE;
-    Transforms.select(editor, { path: [0, 0], offset: 0 });
-    toast.success('New note created');
-  };
+  setTitle('');
+  setValue(INITIAL_VALUE);
+  setTags([]); // Clear the tags
+  editor.children = INITIAL_VALUE;
+  Transforms.select(editor, { path: [0, 0], offset: 0 });
+  toast.success('New note created');
+};
 
   const handleSaveNote = useCallback(async () => {
     toast.info('Preparing to save note');
@@ -280,7 +281,7 @@ const TextEditor: React.FC = () => {
             <ul>
               {savedNotes.map((note, index) => (
                 <li key={index} onClick={() => handleNoteSelect(note.title)}>
-                  <strong>{note.title} with tags {note.tags.map(tag => tag.name).join(', ')}</strong>
+                  <strong>{note.title}</strong>
                   <span>{note.content.substring(0, 50)}...</span>
                 </li>
               ))}
