@@ -23,6 +23,9 @@ declare module 'slate' {
   }
 }
 
+// Define the WorkspaceId type if it's not already defined
+type WorkspaceId = number; // Adjust this based on the actual type
+
 // Constants
 const INITIAL_VALUE: Descendant[] = [
   {
@@ -38,7 +41,7 @@ const TextEditor: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, tags: { name: string, manual: boolean }[] }[]>([]);
-  const [workspaceId, setWorkspaceId] = useState<number>(0);
+  const [workspaceId, setWorkspaceId] = useState<WorkspaceId>(0); // Use WorkspaceId type here
   const [tags, setTags] = useState<{ name: string, manual: boolean }[]>([]);
 
   // Memoized values
@@ -71,7 +74,7 @@ const TextEditor: React.FC = () => {
   // Helper functions
   const loadWorkspace = async () => {
     try {
-      const id = await invoke('get_workspace_id', { path: "./testing-workspace" }) as number;
+      const id = await invoke('get_workspace_id', { path: "./testing-workspace" }) as WorkspaceId; // Use WorkspaceId type here
       setWorkspaceId(id);
       loadSavedNotes(id);
     } catch (error) {
@@ -80,7 +83,7 @@ const TextEditor: React.FC = () => {
     }
   };
 
-  const loadSavedNotes = async (workspaceId: number) => {
+  const loadSavedNotes = async (workspaceId: WorkspaceId) => { // Use WorkspaceId type here
     try {
       const files = await invoke('files_in_workspace', { workspaceId }) as { document: {title: string, body: string}, tags: { name: string, manual: boolean }[] }[];
       const notes = files.map((doc) => {
@@ -119,6 +122,7 @@ const TextEditor: React.FC = () => {
   const handleNewNote = () => {
     setTitle('');
     setValue(INITIAL_VALUE);
+    setTags([]); // Clear the tags
     editor.children = INITIAL_VALUE;
     Transforms.select(editor, { path: [0, 0], offset: 0 });
     toast.success('New note created');
@@ -264,7 +268,7 @@ const TextEditor: React.FC = () => {
       <ToastContainer />
       <div className="editor-header">
         <div className="search-wrapper">
-          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+          <Search onTagClick={handleTagClick} selectedTags={selectedTags} searchQuery={searchQuery} setSearchQuery={setSearchQuery} workspace_id={workspaceId} handleNoteSelect={handleNoteSelect} />
         </div>
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleNewNote} className="new-note-btn">New +</button>

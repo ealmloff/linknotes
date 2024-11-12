@@ -1,14 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { invoke } from "@tauri-apps/api/core";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Define the WorkspaceId type if it's not already defined
+type WorkspaceId = number; // Adjust this based on the actual type
 
 interface SearchProps {
   onTagClick: (tag: string) => void;
   selectedTags: string[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  workspace_id: WorkspaceId; // Use WorkspaceId type here
+  handleNoteSelect: (title: string) => void; // Add handleNoteSelect as a prop
 }
 
-const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery }) => {
+interface SearchResult {
+  distance: number;
+  title: string;
+  character_range: [number, number];
+}
+
+const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, setSearchQuery, workspace_id, handleNoteSelect }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +45,31 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
     if (event.key === 'Escape') {
       setIsDropdownOpen(false);
     }
+    else if (event.key === 'Enter') {
+      performSearch(searchQuery, selectedTags);
+    }
+
+  };
+
+  const performSearch = async (query: string, tags: string[]) => {
+    try {
+      const results = await invoke('search', {
+        text: query,
+        tags: tags,
+        results: 10,
+        workspaceId: workspace_id // Use the actual workspace ID
+      }) as SearchResult[];
+
+      // Remove duplicate titles
+      const uniqueResults = results.filter((result, index, self) =>
+        index === self.findIndex((r) => r.title === result.title)
+      );
+
+      setSearchResults(uniqueResults);
+    } catch (error) {
+      console.error('Failed to perform search:', error);
+      toast.error(`Failed to perform search ${error}`);
+    }
   };
 
   useEffect(() => {
@@ -46,7 +86,7 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
     if (searchQuery) {
       setIsDropdownOpen(true);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedTags]);
 
   return (
     <div className="search-container" ref={searchRef}>
@@ -68,8 +108,13 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
             ))}
           </div>
           <div className="search-results">
-            {/* Display search results here */}
+            {searchResults.map((result, index) => (
+              <div key={index} className="search-result" onClick={() => handleNoteSelect(result.title)}>
+                {result.title}
+              </div>
+            ))}
           </div>
+          <button onClick={() => performSearch(searchQuery, selectedTags)}>Search</button>
         </div>
       )}
     </div>
