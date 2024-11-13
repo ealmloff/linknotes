@@ -144,9 +144,9 @@ impl TagClassifier {
         let classifier = Classifier::new(&device, config).unwrap();
 
         let device = accelerated_device_if_available().unwrap();
-        let epochs = 10;
+        let epochs = 5;
         let learning_rate = 0.003;
-        let batch_size = 5;
+        let batch_size = 50;
         let bert = bert().await.unwrap();
         let mut dataset = TextClassifierDatasetBuilder::<u32, _>::new(bert);
         for (document, id) in tagged_documents {
