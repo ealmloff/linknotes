@@ -23,7 +23,10 @@ pub async fn search(
     println!("Search called with text {:?} and tags {:?}", text, tags);
     tracing::info!("Search called with text {:?} and tags {:?}", text, tags);
     let workspace = get_workspace_ref(workspace_id);
-    let document_table = workspace.document_table().await.map_err(|e| e.to_string())?;
+    let document_table = workspace
+        .document_table()
+        .await
+        .map_err(|e| e.to_string())?;
     let bert = bert().await.map_err(|e| e.to_string())?;
     let embedding = bert.embed(text).await.map_err(|e| e.to_string())?;
     let mut documents_with_all_tags = document_table
@@ -42,7 +45,8 @@ pub async fn search(
         id: String,
     }
 
-    let documents_with_all_tags: Vec<MetaId> = documents_with_all_tags.take(0).map_err(|e| e.to_string())?;
+    let documents_with_all_tags: Vec<MetaId> =
+        documents_with_all_tags.take(0).map_err(|e| e.to_string())?;
     let nearest = document_table
         .search(embedding)
         .with_results(results)
