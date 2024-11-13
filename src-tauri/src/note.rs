@@ -303,7 +303,9 @@ async fn test_set_tags() {
     );
 
     let results =
-        crate::search::search("test".to_string(), vec!["tag2".to_string()], 10, workspace).await;
+        crate::search::search("test".to_string(), vec!["tag2".to_string()], 10, workspace)
+            .await
+            .unwrap();
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].title, "test-note");
     assert_eq!(results[0].character_range, 0..text.len());
@@ -316,7 +318,8 @@ async fn test_set_tags() {
         10,
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].title, "test-note");
     assert_eq!(results[0].character_range, 0..text.len());
@@ -327,7 +330,8 @@ async fn test_set_tags() {
         10,
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     assert!(results.is_empty());
 
     delete_workspace(workspace);

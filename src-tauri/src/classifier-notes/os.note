@@ -1,0 +1,404 @@
+- Operating system
+	- User's view: Easier view into the system
+		- Filesystem on top of the storage
+		- Security
+			- Multi user operation
+		- Resource management
+		- Running programs:
+			- The CPU doesn't know about the disk
+			- You need the os to read the program from the disk into memory to run it
+	- System's view:
+		- Allocates resources to programs
+		- Controls io devices and programs
+	- What we often call the Kernel is the core OS. Not the extra cruft that ships with the OS (MS edge)
+- User level vs kernel level
+	- Only kernel level code can use all instructions from the ISA
+- Bootstrap program
+	- The CPU always starts reading and executing at a specific memory location
+	- Starts the cpu registers and memory
+	- Starts the OS kernel
+- Interrupts
+	- When an interrupt is triggered, jump to the address at the interrupt table and run that code immediately
+	- Operating systems are driven by interrupts
+	- Software and hardware interrupts
+		- For example, segmentation fault is a software interrupt
+		- Even software interrupts are triggered by the hardware: eg divide by zero -> throw interrupt
+		- Interrupt -> OS interrupt handler -> Continue the program with the information from the interrupt
+- OS Types
+	- Batch systems
+		- Run programs in order they are submitted, one after another
+	- Multiprogramming
+		- Task is bounded by CPU or IO
+		- We can run both a CPU and IO task at once to maximize throughput
+			- Run CPU job while waiting for IO
+		- Can be faster for cooperative systems
+	- Time sharing (multitasking)
+		- Switching between many processes
+		- Uses a scheduler to choose which job will run when
+	- Distributed OS
+	- **Virtualization: OS runs under a hypervisor that allocates hardware to virtualized OS**
+- OS Tasks
+	- Each program has its own address space and can't touch other address spaces
+	- User code and kernel code should be separated. Only kernel code can run pfrivileged operations
+	- Hardware must be able to run in unprivileged and privileged mode
+- Memory management
+	- The OS keeps track of what process is using what memory and when
+	- Deciding how to allocate memory
+- Storage management
+	- Provides a common API for storage - Files
+	- Access control to different files - js programs in the browser cannot change the system files
+	- Memory/Storage hierarchy
+		- Registers < cache < \[**OS manages**: main memory < solid state < magnetic disk\]
+		- Registers: limited by instruction encoding, physical space and cost
+			- Controlled by the compiler
+		- Cache: much larger, but further away; could be on the CPU or motherboard L1-L3
+			- Larger caches are slower because they are farther away and the address space is larger
+			- Controlled by the CPU
+		- main memory
+			- Controlled by the OS
+		- Solid state/magnetic disk
+			- Controlled by the OS
+			- May be cached/buffered in the main memory
+- Operating system services
+	- CLI - command line interface
+	- GUI - graphical user interface
+	- Touch screen interface
+	- program execution
+		- Shared memory
+		- Message passing
+		- Error detection
+			- Doesn't crash everything
+			- Send signal to the program if stuff fails
+- Signal Handlers
+	- Sync - signal originates from within this process
+	- Async - signal originates from another process or the OS
+- Loader: places programs into memory and prepares them for execution
+- Linker: combines object files and system libraries to create an executable
+- Assembler: Assembly -> machine code
+- System calls
+	- System calls are typically more expensive to call
+	- Each call goes into the CPU and is handled as a special interrupt
+- PCB: process control block - keeps track of each process, how much memory it owns, etc
+	- PC/Registers when it was last frozen
+- Context switching
+	- job queue - set of all processes in the system
+	- ready queue - set of processes waiting for compute
+	- device queues - set of processes waiting for io
+- Scheduler
+	- Longer term scheduler - find mix of CPU and IO bound jobs
+		- Controls the degree of multiprocessing
+		- slower - used less frequently
+		- Most OSs don't even have a long term scheduler
+	- Short term scheduler - selects the process to run on the CPU
+		- faster - used frequently
+	- **Wait time** - time waiting inside the ready queue
+	- **Response time** - time waiting until it starts running
+	- **Turn Around Time** - time it takes to from arrival to completion
+- Parts of the address space: **text, data, stack, and heap** stack grows down from max memory
+- Process creation
+	- Parent and child processes
+		- Parent can die before the child and the child keeps running
+			- Child processes get adopted by the first process if their parent dies in Unix
+				- Process id 1
+		- Parent and child can share all, some, or no resources
+			- Unix shares nothing
+		- Child process address space
+			- Child and parent have the same address space at a different memory location
+			- Copies the parent's memory contents
+			- PID is different
+			- `fork` creates new process
+				- The memory is copied - you need channels or atomics to talk between threads
+				- returns a different value based on if it is the child or the parent
+				- if return value is < 0, error
+				- if the return value is 0, this is the child
+				- if the value is > 0, this is the parent and the value is the pid of the child
+			- `execlp` zeros stack and heap and starts running a new program
+				- overwrites the address space
+			- `wait` pauses until the first child is finished: accepts an out parameter that is set to the return status of the child
+			- `abort` kills a specific child process
+	- Each process gets a process id
+- IPC: interprocess communication
+	- Shared memory
+		- fast
+		- shared memory between many processes
+		- The shared memory is owned by both processes
+	- Message passing
+		- No need for conflict resolution
+		- slower, you need to copy everything
+		- Can work between computers
+		- Easier
+		- The memory for the message queue is owned by the kernel
+		- Creating, destroying, sending and receiving the link all requires system calls
+		- Direct naming
+			- know the ids of the sender and receiver
+		- Indirect naming
+			- know the id of the channel between the sender and receiver
+			- channel is called mailbox
+			- as many receivers as you want can subscribe to the mailbox
+		- Blocking and non-blocking apis
+		- unbounded capacity - senders never block
+		- UNIX
+			- pipes
+				- one direction - can create anonymous pipes between children and parent processes
+					- Since read can be blocking, you can use it for synchronization
+					- `pipe` takes a `int[2]` array and modifies it in place to contain ids for the (0) read and (1) write parts
+					- 0, 1, 2 ids are built into the process. The os allocates per process after that
+						- 0: input
+						- 1: output
+						- 2: error
+					- `dup`: duplicates a file descriptor and returns a new id that is the duplicated file descriptor
+					- `dup2(out, in)`: like `dup` but gives an explicit output file descriptor
+				- FIFO/named pipes
+					- Can be used outside of related processes
+					- Can exist even after the creating process is killed
+					- Appear as a normal file in the filesystem - you can use the path to identify it
+					- half-duplex: one process can either read or write
+					- `mkfifo(StringName, FilePermissionsBitset)`
+						- Open and read **or** write like a normal file
+						- Open blocks until reader or writer is available
+					- Multiple receivers race to grab the top message
+			- messages queues
+				- Each queue gets it's own number
+				- Each process can send and receive from the same queue - full duplex
+				- `msgget(message_type, ?)` creates queue, `msgsend` sends message, `msgrcv(queue_id, into, len, message_type, 0)` receives message, `msgctl(queue_id, IPC_RMID, NULL)` deletes the message queue
+				- `struct msg_buff { long type; char buffer\[10000\]}`
+					- The first `long` bytes must be the type of the buffer
+				- `msgsend(queue_id, ptr, size)`
+				- `msgrcv(queue_id, into, len, message_type, 0)`
+			- shared memory
+				- Uniquely named either system wide or in the same tree of processes
+				- Grant permissions to different processes
+					- Read, write, execute
+				- Atomic operations to deal with race conditions
+				- Creating the shared memory segment
+					- Create shared memory `shmget(IPC_PRIVATE, size, S_IRUSR|S_IWUSR)` returns id of memory
+				- Getting shared memory
+					- `(char*)shmat(segment_id, NULL, 0)` returns memory pointer
+				- detach shared memory: `shmdt(shared_memory_ptr)`
+				- remove shared memory segment: `shmctl(segment_id, IPC_RMID, NULL)`
+			- sockets
+				- Two way pipe - **may be between multiple systems**
+				- Unix domain sockets
+					- Only between processes in the same computer
+					- Special file in the system
+					- TCP - connection based - order is preserved - no lost packets
+					- UDP - connection less - order may not be preserved - some packets may be lost
+					- `socket(domain, type (connection based or not), protocol)`
+						- Unix domain socket type is `AF_UNIX`
+					- `bind(sockfd, socketaddr, addrlen)` - Creates the socket file if needed and open it
+					- `listen(...)`
+					- `accept(sockfd, addr, addrlen)` - accept client connection
+					- `recv(...)` - receive socket data
+				- client server communication
+- Threads
+	- Processes are not good when many threads need to be used in the same program
+	- Threads are lightweight processes
+		- Thread context: PC, stack, registers
+		- Process context: Process ID, User ID, Group ID, Files, Locks, Sockets
+			- Not duplicated when a new thread is spawned
+		- Smaller context so switching is fast
+		- Single address space for the whole process - shared memory communication
+	- **`clone`** is the linux thread creation system call
+		- choose to share or not share signal handlers
+	- Pthreads library
+		- pthread_create – create a new thread
+			- `int pthread_create(pthread_t *restrict thread, const pthread_attr_t *restrict attr,  			void *(*start_routine)(void*), void *restrict arg);
+			- upon success, a new thread id is returned in thread
+		- `pthread_exit(status)` - exit with status code 
+		- `pthread_attr_init(attrs)` - initialize thread attributes
+			- `int pthread_attr_init(pthread_attr_t *attr);`
+			- defines the attributes of the thread created scope, detach state, stack size, stack addr, scheduling policy 
+	- User vs kernel level threads
+		- You can emulate threads without OS support
+			- Manually switch between threads
+			- Green threads?
+			- Async executer?
+		- Kernel level threads
+			- Multicore
+	- Calling fork on a thread
+		- Linux: only duplicate the one thread
+	- Calling exec on a thread
+		- Kills all threads
+	- Asynchronous cancellation 
+		- terminates the target thread **immediately**
+		- allocated resources may not all be freed easily
+		- status of shared data may remain ill-defined
+	- Deferred cancellation 
+		- target thread terminates itself
+		- orderly cancellation can be easily achieved
+		- failure to check cancellation status may cause issues
+	- Linux supports both cancellation types
+		- `man pthread_cancel`
+	- Signal handling in threads
+		- May be handled per thread, or per process
+		- Sync signals can be handled by the thread that caused the signal
+		- Async signals can be handled per process
+
+```c
+#include <pthread.h>
+#include <stdio.h>
+
+int sum; /* data shared by all threads */
+void *runner(void *param); /* thread function prototype */
+
+int main (int argc, char *argv[])
+{
+    pthread_t tid; /* thread identifier */
+    pthread_attr_t attr /* set of thread attributes */
+
+    if(atoi(argv[1]) < 0) {
+        fprintf(stderr, “%d must be >=0\n”, atoi(argv[1]));
+        return -1;
+    }
+    /* get the default thread attributes */
+    pthread_attr_init(&attr);
+    /* create the thread */
+    pthread_create(&tid, &attr, runner, argv[1]);
+    /* wait for the thread to exit */
+    pthread_join(tid, NULL);
+    fprintf(stdout, “sum = %d\n”, sum);
+}
+```
+- Process synchronization
+	- Shared memory
+	- Synchronizing multiple writers at the same time
+	- Requirements
+		- Mutual exclusion - one process at once
+		- Progress - should be fair between process
+		- bounded waiting - should be a fixed bound on how long a wait is - in terms of how many other processes will run before you
+	- Preemptive kernels - interrupts OS code
+		- You need to make sure OS code is free from race conditions
+		- Most kernels are preemptive
+	- Non-preemptive kernel - only user code can be interrupted
+		- more responsive
+	- Peterson's solution
+		- Two writers
+		- `int turn; boolean flag[2];`
+			- turn is the current processes' turn
+			- flag \[process\] is true if it is it's turn to enter the critical section
+			- Give away control to avoid race condition
+```c
+flag[0] = TRUE;
+turn = 1;
+while (flag[1] && turn == 1) {}
+// critical section
+flag[0] = FALSE;
+// end
+```
+```c
+flag[1] = TRUE;
+turn = 0;
+while (flag[0] && turn == 0) {}
+// critical section
+flag[1] = FALSE;
+// end
+```
+- Semaphores
+	- Higher level sync api
+	- `sem_init(&id)` where id is int
+	- `wait(&id)` - wait and enter the critical section
+		- Might wait via spin lock - will block the core, could be slow
+			- Bad on single processor systems
+			- Context switch may be more expensive than spin lock
+		- Might keep a queue of waiting processes and wake them as needed
+	- `signal(&id)` - exit the critical section
+	- Uses atomics to keep track of the wait count
+	- Non-binary semaphores
+	- Priority inversion: High priority process blocked on low priority process
+		- Solution: priority inheritance: while a process is using a high priority resource it becomes high priority
+	- Examples:
+		- Blocking buffer backed channel: wait until the consumer sees the data
+			- Mutex for access to the buffer
+			- Empty semaphore: number of empty slots in the buffer - producer waits until this is more than one
+			- Full semaphore: number of full slots in the buffer - consumer waits until this is more than one
+- Monitor
+	- Synchronization handled by the programming language
+	- wraps shared data - rwlock
+	- You can wait for an event before using the monitor
+		- For example, a receiver in a channel might wait until the channel is not empty before locking the channel to grab data
+		- Processes can send signals to waiting processes to tell them they might be ready
+- Scheduling
+	- Wait Time WT() = end time - arrival time 
+	- FCSF - first come first serve
+		- FIFO queue
+	- SJF - shortest job first
+		- Optimal, but requires knowledge of the future
+			- Optimal in terms of average weight time
+		- In practice, estimate time based on history or expected time
+	- Preemptive SJF
+		- Like SJF, but shorter processes can interrupt longer processes
+	- Priority scheduling
+		- Higher priorities run first
+		- Low priorities may never run
+		- Age - priority grows over time to prevent starvation
+	- Round robin
+		- Each process is given a time to run and then it rotates
+		- **Preempt** jobs if they run too long
+		- Advantages - simple, avoids starvation
+		- Disadvantage - high context switch overhead, higher avg weighting time, IO bound system may be slow
+		- Time slice for each process is called **Time quantum**
+	- Lottery scheduling
+		- Processes get tickets
+		- The OS randomly picks a ticket to run
+		- Short processes get more tickets
+		- Each process gets at least one ticket
+	- Multilevel queue
+		- foreground and background queues
+		- for interactive and batch jobs
+	- Multilevel feedback queue
+		- Like multilevel queue, but automatically moves between queues
+		- Sorts into queues based on CPU burst times
+		- IO bound - high priority; CPU bound - low priority
+		- Eg
+			- Queue 0: short tasks
+			- Queue 1: long tasks
+			- All tasks in queue 0 run first, then queue 1 runs
+			- If a task runs in 0, but needs to be kicked out because it is running too long, then it could get moved to queue 1
+		- Approximates SRTF (shortest remaining time first)
+		- Could starve long running jobs
+			- Aging - increase priority of jobs that stay in a low priority queue for a long time
+		- Time quantum expires
+			- How many times does a process need to run out of time before it moves between queues
+		- Return from sleep: if it doesn't run within the max wait time, update to this queue
+	- Multithreaded scheduling
+		- Contention scope
+			- User level threads
+			- Process contention scope
+				- Many threads on a single kernel thread
+			- System contention scope
+				- One task gets a whole kernel thread
+		- Scheduling policy and priority: May be inherited from the parent or not
+			- Strategies
+				- non-real time
+				- real time round robin
+				- other
+		- Schedulers
+			- asymmetric
+				- Only one thread access the system data structures
+			- Symmetric multiprocessing (SMP) - most systems
+				- Each thread does its own
+- Memory management
+	- CPU can only access memory and registers directly
+	- Has both instructions and storage - Von Neumann architecture
+	- Cache is closer and speeds up repeated memory access
+	- User vs OS memory space
+		- OS controls low memory addresses
+		- User space is at higher addresses
+			- base and limit address store start and end of process range
+	- Simple - processes get a sequential range of memory
+	- Address binding - where does the data go
+		- Never modify addresses - Compile time - absolute address - .DATA section
+		- Modify addresses initially - Load time - relocate addresses when the process loads - compiler + OS support together. Compiler needs to at least identify what numbers are pointers so they can be relocated
+		- Modify addresses dynamically - Execution time - Memory space is mapped/filtered with hardware support for memory maps or base&limit registers
+	- Execution time address binding is used most today
+		- Logical address/virtual address - Address generated by CPU
+		- Physical address - Address actually used by the RAM
+		- Memory management unit - MMU - maps memory
+			- Simple MMU - Add K to every address before giving it to the RAM -> $L(i) = P(i + K)$ where $L$ is the logical address and $P$ is the physical address
+		- Static loading - Entire process in memory before program starts
+		- Dynamic loading - Memory is allocated at needed - better memory utilization because you don't need to allocate memory you never use
+		- Static linking - Link together all of the code at compile time
+			- Bigger self contained binary
+		- Dynamic linking - Link together shared libraries when you run the program
+			- Smaller system dependent binary
+			- Shared library could update underneath you

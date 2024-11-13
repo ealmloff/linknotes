@@ -125,7 +125,7 @@ impl Workspace {
             classifier = Some(TagClassifier::new(self, &documents, |_| {}).await);
         }
         let classifier = classifier.unwrap();
-        let tag = classifier.classify(self, document).await;
+        let tag = classifier.classify(self, document).await?;
         *classifier_mut = Some(classifier);
         Ok(tag)
     }

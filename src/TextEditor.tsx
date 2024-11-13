@@ -145,7 +145,7 @@ const TextEditor: React.FC = () => {
       parsedContent.forEach((block: any) => {
         if (block.type === 'paragraph') {
           block.children.forEach((child: any) => {
-            extractedText += child.text + ' ';
+            extractedText += child.text + '\n';
           });
         }
       });

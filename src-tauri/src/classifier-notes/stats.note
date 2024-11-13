@@ -1,0 +1,242 @@
+Statistics Overview
+
+1. Fundamental Concepts
+1.1 Definition and Scope
+1.1.1 Core Definition
+- Statistics is the science of learning from data
+- Involves methodologies for data collection, organization, and analysis
+- Focuses on drawing meaningful conclusions from information
+1.1.2 Applications
+- Scientific research
+- Business analytics
+- Social sciences
+- Medical studies
+- Engineering
+1.1.3 Historical Development
+- Origins in census taking and state records
+- Modern foundations in 17th-19th centuries
+- Contemporary computational statistics
+
+1.2 Population vs Sample
+1.2.1 Population Characteristics
+- Complete set of all possible observations
+- Parameters are fixed but often unknown values
+- Denoted with Greek letters (μ, σ, etc.)
+1.2.2 Sample Properties
+- Subset of population
+- Statistics are calculated values from sample
+- Denoted with Latin letters (x̄, s, etc.)
+1.2.3 Sampling Methods
+1.2.3.1 Random Sampling
+- Simple random sampling
+- Stratified sampling
+- Cluster sampling
+1.2.3.2 Non-Random Sampling
+- Convenience sampling
+- Quota sampling
+- Purposive sampling
+
+2. Descriptive Statistics
+2.1 Measures of Central Tendency
+2.1.1 Mean
+2.1.1.1 Types
+- Arithmetic mean
+- Geometric mean
+- Harmonic mean
+- Weighted mean
+2.1.1.2 Properties
+- Affected by outliers
+- Sum of deviations equals zero
+- Minimizes sum of squared deviations
+2.1.2 Median
+2.1.2.1 Characteristics
+- Middle value when ordered
+- Not affected by outliers
+- Divides data into two equal parts
+2.1.2.2 Applications
+- Income distributions
+- House prices
+- Non-normal distributions
+2.1.3 Mode
+2.1.3.1 Types
+- Unimodal
+- Bimodal
+- Multimodal
+2.1.3.2 Uses
+- Categorical data
+- Discrete distributions
+- Pattern identification
+
+2.2 Measures of Dispersion
+2.2.1 Range
+2.2.1.1 Components
+- Maximum value
+- Minimum value
+- Total spread
+2.2.1.2 Limitations
+- Sensitive to outliers
+- Ignores data distribution
+- Limited statistical utility
+
+2.2.2 Variance
+2.2.2.1 Calculation Methods
+- Population variance
+- Sample variance
+- Degrees of freedom
+2.2.2.2 Properties
+- Always non-negative
+- Squared units
+- Additive for independent variables
+
+2.2.3 Standard Deviation
+2.2.3.1 Interpretation
+- Average deviation from mean
+- Same units as original data
+- Empirical rule (68-95-99.7)
+2.2.3.2 Applications
+- Quality control
+- Risk measurement
+- Performance evaluation
+
+2.2.4 Interquartile Range
+2.2.4.1 Components
+- First quartile (Q1)
+- Third quartile (Q3)
+- Quartile deviation
+2.2.4.2 Uses
+- Boxplot construction
+- Outlier detection
+- Robust measure of spread
+
+3. Probability Theory
+3.1 Basic Probability
+3.1.1 Axioms
+3.1.1.1 Fundamental Rules
+- Non-negativity
+- Unity sum
+- Additive property
+3.1.1.2 Derived Rules
+- Complement rule
+- Union rule
+- Intersection rule
+
+3.1.2 Types of Events
+3.1.2.1 Simple Events
+- Single outcome
+- Elementary event
+- Atomic event
+3.1.2.2 Compound Events
+- Union of events
+- Intersection of events
+- Complement of events
+
+3.2 Probability Distributions
+3.2.1 Discrete Distributions
+3.2.1.1 Common Types
+- Binomial
+- Poisson
+- Geometric
+- Hypergeometric
+3.2.1.2 Properties
+- Probability mass function
+- Cumulative distribution function
+- Expected value and variance
+
+3.2.2 Continuous Distributions
+3.2.2.1 Normal Distribution
+3.2.2.1.1 Parameters
+- Mean (μ)
+- Standard deviation (σ)
+- Standard normal form (Z)
+3.2.2.1.2 Properties
+- Symmetrical
+- Bell-shaped
+- Infinite range
+3.2.2.2 Other Distributions
+- Chi-square
+- Student's t
+- F-distribution
+- Exponential
+
+4. Inferential Statistics
+4.1 Hypothesis Testing
+4.1.1 Components
+4.1.1.1 Hypotheses
+- Null hypothesis (H₀)
+- Alternative hypothesis (H₁)
+- One-tailed vs two-tailed
+4.1.1.2 Errors
+4.1.1.2.1 Type I Error
+- False positive
+- α level
+- Significance level
+4.1.1.2.2 Type II Error
+- False negative
+- β level
+- Power = 1 - β
+
+4.1.2 Common Tests
+4.1.2.1 Parametric Tests
+- Z-test
+- T-test
+- ANOVA
+- Regression
+4.1.2.2 Non-parametric Tests
+- Chi-square
+- Mann-Whitney U
+- Kruskal-Wallis
+- Wilcoxon
+
+4.2 Confidence Intervals
+4.2.1 Construction
+4.2.1.1 Components
+- Point estimate
+- Margin of error
+- Critical value
+4.2.1.2 Interpretation
+- Confidence level
+- Precision
+- Width trade-offs
+
+5. Data Types and Measurement
+5.1 Qualitative Data
+5.1.1 Nominal
+5.1.1.1 Characteristics
+- Categories without order
+- Names or labels
+- No numerical meaning
+5.1.1.2 Analysis Methods
+- Mode
+- Frequency distribution
+- Chi-square tests
+
+5.1.2 Ordinal
+5.1.2.1 Properties
+- Ordered categories
+- Ranked data
+- Unknown intervals
+5.1.2.2 Appropriate Analyses
+- Median
+- Percentiles
+- Rank correlations
+
+5.2 Quantitative Data
+5.2.1 Discrete
+5.2.1.1 Properties
+- Countable values
+- Integer-valued
+- Finite or countably infinite
+5.2.1.2 Examples
+- Counts
+- Frequencies
+- Rankings
+
+5.2.2 Continuous
+5.2.2.1 Characteristics
+- Infinite possible values
+- Measured on a scale
+- Fractional values possible
+5.2.2.2 Analysis Methods
+- Mean
+- Standard deviation
+- Parametric tests
