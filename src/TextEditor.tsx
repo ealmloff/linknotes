@@ -251,7 +251,23 @@ const TextEditor: React.FC = () => {
       toast.error('Failed to add tag');
     }
   };
-
+  //The handleFileChange event handler allows users to import a .txt file and insert its content into the editor
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'text/plain') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        Transforms.insertText(editor, text);
+      };
+      reader.readAsText(file);
+    } else {
+      alert('Please select a valid .txt file');
+    }
+    // Reset the file input value
+    event.target.value = '';
+  };
+  
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -273,6 +289,15 @@ const TextEditor: React.FC = () => {
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleNewNote} className="new-note-btn">New +</button>
         <button onClick={handleSaveNote} className="save-note-btn">Save</button>
+        <button onClick={() => document.getElementById('fileInput')?.click()}>Import</button>
+        //Hidden file input element allows users to select a .txt file from their computer
+        <input
+          type="file"
+          id="fileInput"
+          style={{ display: 'none' }}
+          accept=".txt"
+          onChange={handleFileChange}
+        />
       </div>
       <div className="editor-body">
         <div className="sidepanel">
