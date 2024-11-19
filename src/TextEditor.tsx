@@ -290,7 +290,6 @@ const TextEditor: React.FC = () => {
         <button onClick={handleNewNote} className="new-note-btn">New +</button>
         <button onClick={handleSaveNote} className="save-note-btn">Save</button>
         <button onClick={() => document.getElementById('fileInput')?.click()}>Import</button>
-        //Hidden file input element allows users to select a .txt file from their computer
         <input
           type="file"
           id="fileInput"
