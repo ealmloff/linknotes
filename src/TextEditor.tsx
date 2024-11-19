@@ -251,7 +251,7 @@ const TextEditor: React.FC = () => {
       toast.error('Failed to add tag');
     }
   };
-  //The handleFileChange event handler allows users to import a .txt file and insert its content into the editor
+  //The handleFileChange event handler allows users to import a .txt file and insert its content into the editor.
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'text/plain') {
