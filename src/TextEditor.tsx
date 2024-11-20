@@ -7,6 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Search from './Search';
 import TagsPanel from './TagsPanel';
+import './App.css';
 
 // Type definitions
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -43,6 +44,8 @@ const TextEditor: React.FC = () => {
   const [savedNotes, setSavedNotes] = useState<{ title: string, content: string, tags: { name: string, manual: boolean }[] }[]>([]);
   const [workspaceId, setWorkspaceId] = useState<WorkspaceId>(0); // Use WorkspaceId type here
   const [tags, setTags] = useState<{ name: string, manual: boolean }[]>([]);
+  const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -87,7 +90,7 @@ const TextEditor: React.FC = () => {
     try {
       const files = await invoke('files_in_workspace', { workspaceId }) as { document: {title: string, body: string}, tags: { name: string, manual: boolean }[] }[];
       const notes = files.map((doc) => {
-        return { title: doc.document.title, content: doc.document.title, tags: doc.tags };
+        return { title: doc.document.title, content: doc.document.body, tags: doc.tags };
       });
       setSavedNotes(notes);
     } catch (error) {
@@ -251,23 +254,48 @@ const TextEditor: React.FC = () => {
       toast.error('Failed to add tag');
     }
   };
-  //The handleFileChange event handler allows users to import a .txt file and insert its content into the editor
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleDeleteClick = (noteId: number) => {
+    setSelectedNoteId(noteId);
+  };
+
+  const confirmDelete = async (noteId: number) => {
+    try {
+      await invoke('delete_note', { title: savedNotes[noteId].title, workspaceId });
+      setSavedNotes(prevNotes => prevNotes.filter((_, index) => index !== noteId));
+      setSelectedNoteId(null);
+      setShowConfirmation(false);
+      toast.success('Note deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete note:', error);
+      toast.error('Failed to delete note');
+    }
+  };
+
+  const cancelDelete = () => {
+    setSelectedNoteId(null);
+    setShowConfirmation(false);
+  };
+
+  // File change handler
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type === 'text/plain') {
+    if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const text = e.target?.result as string;
-        Transforms.insertText(editor, text);
+        const newValue: Descendant[] = text.split('\n').map(line => ({
+          type: 'paragraph' as const,
+          children: [{ text: line }],
+        }));
+        setValue(newValue);
+        editor.children = newValue;
+        Transforms.select(editor, { path: [0, 0], offset: 0 });
       };
       reader.readAsText(file);
-    } else {
-      alert('Please select a valid .txt file');
     }
-    // Reset the file input value
-    event.target.value = '';
   };
-  
+
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -304,10 +332,20 @@ const TextEditor: React.FC = () => {
           {savedNotes.length > 0 ? (
             <ul>
               {savedNotes.map((note, index) => (
-                <li key={index} onClick={() => handleNoteSelect(note.title)}>
+                <li key={index} className="note-item" onClick={() => handleNoteSelect(note.title)}>
+                <div className="note-content">
                   <strong>{note.title}</strong>
                   <span>{note.content.substring(0, 50)}...</span>
-                </li>
+                </div>
+                <div className="note-actions">
+                  <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(index); }}>⋮</button>
+                  {selectedNoteId === index && (
+                    <div className="dropdown-menu">
+                      <button onClick={(e) => { e.stopPropagation(); setShowConfirmation(true); }}>Delete</button>
+                    </div>
+                  )}
+                </div>
+              </li>
               ))}
             </ul>
           ) : (
@@ -341,6 +379,16 @@ const TextEditor: React.FC = () => {
           </Slate>
         </div>
       </div>
+      {showConfirmation && (
+        <>
+          <div className="confirmation-overlay"></div>
+          <div className="confirmation-dialog">
+            <p>Are you sure you want to delete this note?</p>
+            <button onClick={() => confirmDelete(selectedNoteId!)}>Yes</button>
+            <button className="cancel" onClick={cancelDelete}>No</button>
+          </div>
+        </>
+      )}
     </div>
   );
 };
