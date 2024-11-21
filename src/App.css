@@ -120,15 +120,6 @@ button:hover {
   /* Prevent horizontal scroll */
 }
 
-/* Add styles for the search input */
-/* .search-input {
-  padding: 8px; 
-  font-size: 16px;
-  border: 1px solid black;
-  border-radius: 10px;
-  width: 20.5%; 
-} */
-
 /* Search container styles */
 .search-container {
   display: flex;
@@ -139,15 +130,18 @@ button:hover {
 
 .search-wrapper {
   flex: 1;
-  max-width: 300px;
-  /* Restrict the width of the search bar */
+  max-width: 300px; /* Adjust the max-width as needed */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .search-input {
-  padding: 8px;
-  font-size: 16px;
+  padding: 6px; /* Adjust padding to make it smaller */
+  font-size: 14px; /* Adjust font size to make it smaller */
   border: 1px solid black;
-  border-radius: 10px;
+  border-radius: 8px; /* Adjust border radius to make it smaller */
   width: 100%;
 }
 
@@ -183,7 +177,6 @@ button:hover {
   transform: translateY(-2px);
 }
 
-
 .search-tag {
   display: inline-block;
   padding: 4px 10px;
@@ -204,17 +197,37 @@ button:hover {
   opacity: 0.9;
 }
 
+/* Styles for smaller screens */
+@media (max-width: 768px) {
+  .search-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+/* Styles for even smaller screens */
+@media (max-width: 480px) {
+  .search-wrapper {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+  }
+}
 
 .editor-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   /* Center items vertically */
-  margin-bottom: 10px;
-  padding: 5px;
-  border-bottom: 1px solid black;
 }
-
 .editor-header .new-note-btn {
   margin-left: 10px;
   /* Add some space between the button and the title */
@@ -314,14 +327,6 @@ button:hover {
 .editor-input {
   margin-bottom: 10px;
 }
-
-/* .title-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 18px;
-  border: 1px solid black;
-  box-sizing: border-box;
-} */
 
 /* Add styles for the title and tags container */
 .title-tags-container {
