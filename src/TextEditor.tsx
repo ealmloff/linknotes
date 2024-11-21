@@ -261,8 +261,25 @@ const TextEditor: React.FC = () => {
 
   const confirmDelete = async (noteId: number) => {
     try {
-      await invoke('delete_note', { title: savedNotes[noteId].title, workspaceId });
-      setSavedNotes(prevNotes => prevNotes.filter((_, index) => index !== noteId));
+      console.log('Confirming delete for note ID:', noteId);
+      console.log('Deleting note with title:', savedNotes[noteId]?.title, 'Workspace ID:', workspaceId);
+  
+      // Call the Tauri backend
+      const result = await invoke('remove_note', { title: savedNotes[noteId].title, workspaceId });
+      console.log('Backend response:', result);
+  
+      // Update the state
+      setSavedNotes(prevNotes => {
+        const updatedNotes = prevNotes.filter((_, index) => index !== noteId);
+        console.log('Updated notes:', updatedNotes);
+        setTitle(''); // Clear the title
+        setTags([]);
+        setValue(INITIAL_VALUE); // Clear the content
+        editor.children = INITIAL_VALUE; // Reset the editor content
+        Transforms.select(editor, { path: [0, 0], offset: 0 }); 
+        return updatedNotes;
+      });
+  
       setSelectedNoteId(null);
       setShowConfirmation(false);
       toast.success('Note deleted successfully');
@@ -276,6 +293,7 @@ const TextEditor: React.FC = () => {
     setSelectedNoteId(null);
     setShowConfirmation(false);
   };
+
 
   // File change handler
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
