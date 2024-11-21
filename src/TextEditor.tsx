@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { createEditor, Descendant, Transforms, BaseEditor } from 'slate';
+import { createEditor, Descendant, Transforms, BaseEditor, Node } from 'slate';
 import { Slate, Editable, withReact, ReactEditor, RenderElementProps } from 'slate-react';
 import { HistoryEditor, withHistory } from 'slate-history';
 import { invoke } from "@tauri-apps/api/core";
@@ -46,6 +46,7 @@ const TextEditor: React.FC = () => {
   const [tags, setTags] = useState<{ name: string, manual: boolean }[]>([]);
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [cursorPosition, setCursorPosition] = useState<number>(0); // Add state for cursor position
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -73,6 +74,15 @@ const TextEditor: React.FC = () => {
   useEffect(() => {
     console.log("Title changed:", title);
   }, [title]);
+
+  useEffect(() => {
+    // Pass the text content and cursor position to the side panel
+    const textContent = Node.string(editor);
+    console.log("Cursor position:", cursorPosition);
+    // toast.info(`Cursor position: ${cursorPosition}`);
+    console.log("Text content:", textContent);
+    // Implement the logic to pass the information to the side panel here
+  }, [cursorPosition, value]);
 
   // Helper functions
   const loadWorkspace = async () => {
@@ -294,7 +304,6 @@ const TextEditor: React.FC = () => {
     setShowConfirmation(false);
   };
 
-
   // File change handler
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -311,6 +320,24 @@ const TextEditor: React.FC = () => {
         Transforms.select(editor, { path: [0, 0], offset: 0 });
       };
       reader.readAsText(file);
+    }
+  };
+
+  // Event handler to update cursor position
+  const handleCursorPosition = () => {
+    const { selection } = editor;
+    if (selection) {
+      const { anchor } = selection;
+      let cursorIndex = 0;
+
+      // Traverse the nodes to calculate the cursor position
+      for (let i = 0; i < anchor.path[0]; i++) {
+        const node = editor.children[i];
+        cursorIndex += Node.string(node).length;
+      }
+      cursorIndex += anchor.offset;
+
+      setCursorPosition(cursorIndex);
     }
   };
 
@@ -393,6 +420,8 @@ const TextEditor: React.FC = () => {
               placeholder="Start typing your note here..."
               className="editable"
               onKeyDown={handleKeyDown}
+              onKeyUp={handleCursorPosition} // Add onKeyUp event
+              onMouseUp={handleCursorPosition} // Add onMouseUp event
             />
           </Slate>
         </div>
