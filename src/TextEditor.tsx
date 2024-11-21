@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Search from './Search';
 import TagsPanel from './TagsPanel';
 import './App.css';
+import { FaTrash } from 'react-icons/fa';
 
 // Type definitions
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -257,6 +258,7 @@ const TextEditor: React.FC = () => {
 
   const handleDeleteClick = (noteId: number) => {
     setSelectedNoteId(noteId);
+    setShowConfirmation(true);
   };
 
   const confirmDelete = async (noteId: number) => {
@@ -293,7 +295,6 @@ const TextEditor: React.FC = () => {
     setSelectedNoteId(null);
     setShowConfirmation(false);
   };
-
 
   // File change handler
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -356,12 +357,7 @@ const TextEditor: React.FC = () => {
                   <span>{note.content.substring(0, 50)}...</span>
                 </div>
                 <div className="note-actions">
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(index); }}>⋮</button>
-                  {selectedNoteId === index && (
-                    <div className="dropdown-menu">
-                      <button onClick={(e) => { e.stopPropagation(); setShowConfirmation(true); }}>Delete</button>
-                    </div>
-                  )}
+                  <FaTrash className="trash-icon" onClick={(e) => { e.stopPropagation(); handleDeleteClick(index); }} />
                 </div>
               </li>
               ))}
