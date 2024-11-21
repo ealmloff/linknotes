@@ -1,6 +1,6 @@
 use kalosm::language::*;
 use note::{get_tags, read_note, remove_note, save_note, set_tags, ContextualDocument};
-use search::search;
+use search::{search, context_search};
 use std::{
     num::NonZero,
     sync::{Arc, OnceLock},
@@ -55,7 +55,8 @@ pub fn run() {
             files_in_workspace,
             load_workspace,
             unload_workspace,
-            delete_workspace
+            delete_workspace,
+            context_search
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

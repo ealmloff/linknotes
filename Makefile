@@ -12,7 +12,7 @@ clean:
 	rm -f linknotes
 
 linknotes: install src-tauri/src/**/*.rs
-	npx tauri dev
+	npx tauri dev --features metals 
 
 test: ac
 	cargo test
