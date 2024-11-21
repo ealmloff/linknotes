@@ -210,6 +210,10 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
+
+    // Get the document path
+    let document_path = workspace.document_path(&title).unwrap();
+
     // First check if the document already exists
     let current_location: Option<ContextualDocumentLocation> =
         db.delete((DOCUMENT_NAME_TABLE, &title)).await.unwrap();
@@ -219,6 +223,11 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
             .delete(current_location.document_id.clone())
             .await
             .unwrap();
+    }
+
+    // Remove the .txt file
+    if document_path.exists() {
+        fs::remove_file(document_path).unwrap();
     }
 }
 
