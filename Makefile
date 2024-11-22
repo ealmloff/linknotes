@@ -11,8 +11,8 @@ clean:
 	cargo clean
 	rm -f linknotes
 
-linknotes: install src-tauri/src/**/*.rs
-	npx tauri dev --features metals 
+linknotes: install src-tauri/src/*.rs
+	npx tauri dev --features metal
 
 test: ac
 	cargo test

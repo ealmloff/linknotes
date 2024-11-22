@@ -12,7 +12,7 @@ use crate::{
     workspace::Workspace,
 };
 
-fn chunk_text(text: &str) -> Vec<Range<usize>> {
+pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
     // First split based on bullet points
     let mut segments = Vec::new();
     let mut last_idx = 0;

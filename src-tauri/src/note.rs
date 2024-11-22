@@ -9,6 +9,7 @@ use surrealdb::sql::Id;
 use pretty_assertions::assert_eq;
 
 use crate::bert;
+use crate::classifier::chunk_text;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
 
 #[derive(Serialize, Deserialize)]
@@ -132,14 +133,25 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
     let db = document_table.table().db();
     let document = Document::from_parts(title.clone(), text);
     tracing::info!("Chunking document");
-    let chunks = DefaultSentenceChunker
-        .chunk(&document, bert().await.unwrap())
+    let body = document.body();
+    let sentences = chunk_text(body);
+    let bert = bert().await.unwrap();
+    let embeddings = bert
+        .embed_batch(sentences.iter().map(|sentence| &body[sentence.clone()]))
         .await
         .unwrap();
-    let segments = chunks
+    let chunks = sentences
+        .clone()
+        .into_iter()
+        .zip(embeddings.into_iter())
+        .map(|(byte_range, embedding)| Chunk {
+            byte_range,
+            embeddings: vec![embedding],
+        });
+    let segments = sentences
         .iter()
-        .map(|chunk| Segment {
-            source_char_range: chunk.byte_range.clone(),
+        .map(|byte_range| Segment {
+            source_char_range: byte_range.clone(),
         })
         .collect();
     tracing::info!("Looking for existing document");
