@@ -32,11 +32,11 @@ pub async fn search(
     let mut documents_with_all_tags = document_table
         .table()
         .db()
-        .query(dbg!(format!(
+        .query(format!(
             "SELECT meta::id(id) as id FROM {} WHERE tags.name CONTAINSALL {}",
             document_table.table().table(),
             serde_json::to_string(&tags).unwrap()
-        )))
+        ))
         .await
         .map_err(|e| e.to_string())?;
 
