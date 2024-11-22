@@ -1,6 +1,6 @@
 use kalosm::language::*;
 use note::{get_tags, read_note, remove_note, save_note, set_tags, ContextualDocument};
-use search::{search, context_search};
+use search::{context_search, search};
 use std::{
     num::NonZero,
     sync::{Arc, OnceLock},
