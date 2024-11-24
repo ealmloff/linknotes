@@ -333,6 +333,7 @@ const TextEditor: React.FC = () => {
   };
 
   // Event handler to update cursor position
+  /// EVAN CHECK THIS OUT
   const handleCursorPosition = () => {
     const { selection } = editor;
     if (selection) {
