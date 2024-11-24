@@ -109,6 +109,8 @@ const TextEditor: React.FC = () => {
         return { title: doc.document.title, content: doc.document.body, tags: doc.tags };
       });
       setSavedNotes(notes);
+      // set cursor to 0
+      setCursorPosition(0);
     } catch (error) {
       console.error('Failed to load saved notes:', error);
       toast.error('Failed to load saved notes');
@@ -380,7 +382,7 @@ const TextEditor: React.FC = () => {
   
     // For example, display this in a toast notification
     toast.info(
-      `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range.start} - ${relevant_range.end})`
+      `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range})`
     );
   };
 
