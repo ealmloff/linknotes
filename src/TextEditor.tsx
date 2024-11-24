@@ -16,6 +16,7 @@ type HeadingElement = { type: 'heading'; children: CustomText[] };
 type CustomText = { text: string; bold?: boolean };
 type CustomElement = ParagraphElement | HeadingElement;
 type CustomEditor = BaseEditor & ReactEditor & HistoryEditor;
+const threshold = 20;
 
 declare module 'slate' {
   interface CustomTypes {
@@ -343,27 +344,35 @@ const TextEditor: React.FC = () => {
       }
       cursorIndex += anchor.offset;
 
-      setCursorPosition(cursorIndex);
+      // only update the cursor position if it has changed by a threshold value
+      if (Math.abs(cursorIndex - cursorPosition) > threshold) {
+        setCursorPosition(cursorIndex);
+        getContextResult(cursorIndex, Node.string(editor));
+      }
+      
+
+      // setCursorPosition(cursorIndex);
     }
   };
 
-  const getContextResult = async (cursorPosition: number, textContent: string) => {
-    try {
-      // Call the backend function and pass cursor position and text content
-      const contextResult = await invoke('get_context', {
-        cursorPosition,
-        textContent,
-        workspaceId,
-      });
-  
-      console.log("Received context result:", contextResult);
-      // You can now display the context result (e.g., in a toast or sidebar)
-      displayContextResult(contextResult);
-    } catch (error) {
-      console.error("Failed to get context:", error);
-      toast.error('Failed to get context');
-    }
-  };
+  const getContextResult = async (cursor_utf16_index: number, document_text: string) => {
+  try {
+    // Call the backend function and pass cursor position and text content
+    const contextResult = await invoke('context_search', {
+      documentText: document_text,
+      cursorUtf16Index: cursor_utf16_index,
+      results: 1, // Adjust the number of results as needed
+      contextSentences: 3, // Adjust the number of context sentences as needed
+      workspaceId: workspaceId,
+    });
+    console.log("Received context result:", contextResult);
+    // You can now display the context result (e.g., in a toast or sidebar)
+    displayContextResult(contextResult);
+  } catch (error) {
+    console.error("Failed to get context:", error);
+    toast.error(`Failed to get context ${error}`);
+  }
+};
   
   // Display the context result (for example, using a toast or modal)
   const displayContextResult = (contextResult: any) => {
