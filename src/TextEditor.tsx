@@ -48,6 +48,10 @@ const TextEditor: React.FC = () => {
   const [selectedNoteId, setSelectedNoteId] = useState<number | null>(null);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [cursorPosition, setCursorPosition] = useState<number>(0); // Add state for cursor position
+  const [activeTab, setActiveTab] = useState<string>('saved'); // Track active tab state
+  const [context, setContext] = useState<any>(null);  // State to store context result
+
+
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -343,6 +347,35 @@ const TextEditor: React.FC = () => {
     }
   };
 
+  const getContextResult = async (cursorPosition: number, textContent: string) => {
+    try {
+      // Call the backend function and pass cursor position and text content
+      const contextResult = await invoke('get_context', {
+        cursorPosition,
+        textContent,
+        workspaceId,
+      });
+  
+      console.log("Received context result:", contextResult);
+      // You can now display the context result (e.g., in a toast or sidebar)
+      displayContextResult(contextResult);
+    } catch (error) {
+      console.error("Failed to get context:", error);
+      toast.error('Failed to get context');
+    }
+  };
+  
+  // Display the context result (for example, using a toast or modal)
+  const displayContextResult = (contextResult: any) => {
+    const { distance, title, relevant_range, text } = contextResult;
+  
+    // For example, display this in a toast notification
+    toast.info(
+      `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range.start} - ${relevant_range.end})`
+    );
+  };
+
+
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
@@ -353,6 +386,11 @@ const TextEditor: React.FC = () => {
         return <p {...props.attributes}>{props.children}</p>;
     }
   }, []);
+
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId); // Set the active tab to the clicked tab
+  };
+
 
   return (
     <div className="text-editor">
@@ -375,7 +413,21 @@ const TextEditor: React.FC = () => {
       </div>
       <div className="editor-body">
         <div className="sidepanel">
-          <h2>Your Notes</h2>
+        <div className="sidepanel-tabs">
+            <div
+              className={`sidepanel-tab ${activeTab === 'saved' ? 'active' : ''}`}
+              onClick={() => handleTabClick('saved')}
+            >
+              Saved Notes
+            </div>
+            <div
+              className={`sidepanel-tab ${activeTab === 'other' ? 'active' : ''}`}
+              onClick={() => handleTabClick('other')}
+            >
+              Other Panel
+            </div>
+          </div>
+          <div className="sidepanel-content" id="saved-notes" style={{ display: activeTab === 'saved' ? 'block' : 'none' }}>
           {savedNotes.length > 0 ? (
             <ul>
               {savedNotes.map((note, index) => (
@@ -393,6 +445,10 @@ const TextEditor: React.FC = () => {
           ) : (
             <p>No notes saved yet.</p>
           )}
+        </div>
+          <div className="sidepanel-content" id="other-panel" style={{ display: activeTab === 'other' ? 'block' : 'none' }}>
+                <p>No notes saved yet.</p>
+          </div>
         </div>
         <div className="editor-content">
           <div className="editor-input">

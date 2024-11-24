@@ -579,6 +579,27 @@ button:hover {
   .text-editor .confirmation-dialog {
     background-color: black;
   }
+
+  .sidepanel-tabs {
+    border-bottom-color: #444;
+  }
+
+  .sidepanel-tab {
+    color: #888;
+  }
+
+  .sidepanel-tab:hover {
+    color: #f6f6f6;
+  }
+
+  .sidepanel-tab.active {
+    border-bottom-color: #f6f6f6;
+    color: #f6f6f6;
+  }
+
+  .sidepanel-content {
+    background-color: #2a2a2a;
+  }
 }
 
 .text-editor .sidepanel .note-item {
@@ -760,4 +781,42 @@ button:hover {
 .editor-header .new-note-btn {
   margin-left: 10px;
   /* Add some space between the button and the title */
+}
+
+.sidepanel-tabs {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.sidepanel-tab {
+  padding: 10px 15px;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-right: 10px;
+  font-weight: 500;
+  color: #888;
+  transition: all 0.3s ease;
+}
+
+.sidepanel-tab:hover {
+  color: #333;
+}
+
+.sidepanel-tab.active {
+  background-color: transparent;
+  border-bottom: 2px solid #f6f6f6;
+  color: #f6f6f6;
+}
+
+.sidepanel-content {
+  display: none;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.sidepanel-content.active {
+  display: block;
 }
