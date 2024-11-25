@@ -154,12 +154,15 @@ pub async fn context_search(
     }
     let cursor_byte_index = cursor_byte_index
         .ok_or_else(|| "Cannot search around a sentence that is not in the document".to_string())?;
+    tracing::info!("Cursor byte index: {:?}", cursor_byte_index);
     let cursor_sentence_index = sentences
         .iter()
         .position(|range| cursor_byte_index <= range.end)
         .unwrap_or(sentences.len() - 1);
+    tracing::info!("Cursor sentence index: {:?}", cursor_sentence_index);
     // Find 3 sentences around the cursor sentence
     let sentence_embedding_range = get_sentence_range(&sentences, cursor_sentence_index, 3);
+    tracing::info!("Sentence embedding range: {:?}", sentence_embedding_range);
     let context = sentences[sentence_embedding_range]
         .into_iter()
         .map(|range| &document_text[range.clone()])
@@ -178,6 +181,8 @@ pub async fn context_search(
         .with_results(results)
         .await
         .map_err(|err| format!("{}", err))?;
+    
+    tracing::info!("Nearest results: {:?}", nearest);
 
     Ok(nearest
         .into_iter()
@@ -206,6 +211,7 @@ pub async fn context_search(
                     ..(target_sentence_utf8_range.end - context_utf8_range.start),
                 &text,
             );
+            tracing::info!("Results: distance {:?} title {:?} relevant_range{:?} text{:?}", distance, title, relevant_range, text);
             ContextResult {
                 distance,
                 title,

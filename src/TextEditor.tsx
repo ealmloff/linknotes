@@ -379,12 +379,15 @@ const TextEditor: React.FC = () => {
   
   // Display the context result (for example, using a toast or modal)
   const displayContextResult = (contextResult: any) => {
-    const { distance, title, relevant_range, text } = contextResult;
+    console.log("Context result:", contextResult);
+    toast.info(`Context: ${contextResult}`);
+
+    // const { distance, title, relevant_range, text } = contextResult;
   
     // For example, display this in a toast notification
-    toast.info(
-      `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range})`
-    );
+    // toast.info(
+    //   `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range})`
+    // );
   };
 
 
