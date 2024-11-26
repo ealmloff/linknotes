@@ -256,6 +256,14 @@ button:hover {
   height: 90%;
 }
 
+.title-tags-container {
+  margin-top: 20px; 
+}
+
+.title-input {
+  margin-bottom: 0px; 
+}
+
 /* Updated sidepanel styles */
 .sidepanel {
   width: 20%;
@@ -267,6 +275,8 @@ button:hover {
   margin-right: 15px;
   overflow-y: auto;
   max-height: calc(100vh - 100px);
+  margin-top: 20px; 
+  padding-top: 10px; 
 }
 
 .sidepanel h2 {
@@ -576,6 +586,12 @@ button:hover {
     background-color: #444;
   }
 
+  .search-wrapper input {
+    height: 20px; 
+    padding: 10px; 
+    font-size: 16px; 
+  }
+
   .text-editor .confirmation-dialog {
     background-color: black;
   }
@@ -819,4 +835,65 @@ button:hover {
 
 .sidepanel-content.active {
   display: block;
+}
+
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+body.light-mode {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.text-editor {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.light-mode .text-editor {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+body.light-mode .editor-header,
+body.light-mode .search-wrapper,
+body.light-mode .tags-panel,
+body.light-mode .new-note-btn,
+body.light-mode .save-note-btn,
+body.light-mode .import-btn,
+body.light-mode .menu-btn,
+body.light-mode .sidepanel,
+body.light-mode .title-input,
+body.light-mode .note-item,
+body.light-mode .search-dropdown,
+body.light-mode .sidepanel-content{
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+body.light-mode .search-wrapper input {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+body.light-mode .tags-panel {
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #000000;
+}
+
+body.dark-mode .MuiMenu-paper {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+body.dark-mode .MuiMenuItem-root {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+body.dark-mode .MuiMenuItem-root:hover {
+  background-color: #444444;
 }

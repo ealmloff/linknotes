@@ -8,7 +8,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Search from './Search';
 import TagsPanel from './TagsPanel';
 import './App.css';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaSun, FaMoon } from 'react-icons/fa';
+import { Menu, MenuItem } from '@mui/material';
 
 // Type definitions
 type ParagraphElement = { type: 'paragraph'; children: CustomText[] };
@@ -49,9 +50,8 @@ const TextEditor: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [cursorPosition, setCursorPosition] = useState<number>(0); // Add state for cursor position
   const [activeTab, setActiveTab] = useState<string>('saved'); // Track active tab state
-  const [context, setContext] = useState<any>(null);  // State to store context result
-
-
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [darkMode, setDarkMode] = useState(true); // Default to dark mode
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -88,6 +88,10 @@ const TextEditor: React.FC = () => {
     console.log("Text content:", textContent);
     // Implement the logic to pass the information to the side panel here
   }, [cursorPosition, value]);
+
+  useEffect(() => {
+    document.body.className = darkMode ? 'dark-mode' : 'light-mode';
+  }, [darkMode]);
 
   // Helper functions
   const loadWorkspace = async () => {
@@ -310,6 +314,18 @@ const TextEditor: React.FC = () => {
     setShowConfirmation(false);
   };
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
+
   // File change handler
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -402,7 +418,18 @@ const TextEditor: React.FC = () => {
         <div className="editor-title">LinkedNotes</div>
         <button onClick={handleNewNote} className="new-note-btn">New +</button>
         <button onClick={handleSaveNote} className="save-note-btn">Save</button>
-        <button onClick={() => document.getElementById('fileInput')?.click()}>Import</button>
+        <button onClick={() => document.getElementById('fileInput')?.click()} className="import-btn">Import</button>
+        <button onClick={handleMenuClick} className="menu-btn">⋮</button>
+        <Menu
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={toggleTheme}>
+            {darkMode ? <FaSun /> : <FaMoon />} {darkMode ? 'Light Mode' : 'Dark Mode'}
+          </MenuItem>
+        </Menu>
         <input
           type="file"
           id="fileInput"
