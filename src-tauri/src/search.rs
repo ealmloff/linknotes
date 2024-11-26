@@ -188,7 +188,7 @@ pub async fn context_search(
             .table()
             .db()
             .query(format!(
-                "SELECT meta::id(id) as id FROM {} WHERE title != \"{}\"",
+                "SELECT meta::id(id) as id FROM {} WHERE document.title != \"{}\"",
                 document_table.table().table(),
                 document_title
             ))
@@ -196,13 +196,15 @@ pub async fn context_search(
             .map_err(|e| e.to_string())?;
 
         let all_other_document_ids: Vec<MetaId> =
-        all_other_document_ids.take(0).map_err(|e| e.to_string())?;
+            all_other_document_ids.take(0).map_err(|e| e.to_string())?;
 
         // Only include those documents in the search results
         search = search.with_filter(
             all_other_document_ids
                 .into_iter()
-                .map(|id| Id::String(id.id)).into_embedding_indexed_table_search_filter(&document_table.table()).await
+                .map(|id| Id::String(id.id))
+                .into_embedding_indexed_table_search_filter(&document_table.table())
+                .await
                 .map_err(|e| e.to_string())?,
         );
     }
@@ -239,7 +241,7 @@ pub async fn context_search(
                 &text,
             );
             tracing::info!(
-                "Results: distance {:?} title {:?} relevant_range{:?} text{:?}",
+                "Results: distance {:?} title {:?} relevant_range {:?} text {:?}",
                 distance,
                 title,
                 relevant_range,
@@ -279,9 +281,10 @@ async fn test_note_context() {
         workspace,
     )
     .await;
-    let results = crate::search::context_search(None, "The cat is here".to_string(), 0, 1, 3, workspace)
-        .await
-        .unwrap();
+    let results =
+        crate::search::context_search(None, "The cat is here".to_string(), 0, 1, 3, workspace)
+            .await
+            .unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].title, "search-note");
     assert_eq!(

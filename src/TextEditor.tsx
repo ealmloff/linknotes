@@ -347,10 +347,10 @@ const TextEditor: React.FC = () => {
       cursorIndex += anchor.offset;
 
       // only update the cursor position if it has changed by a threshold value
-      if (Math.abs(cursorIndex - cursorPosition) > threshold) {
+      // if (Math.abs(cursorIndex - cursorPosition) > threshold) {
         setCursorPosition(cursorIndex);
         getContextResult(cursorIndex, Node.string(editor));
-      }
+      // }
       
 
       // setCursorPosition(cursorIndex);
@@ -384,7 +384,8 @@ const TextEditor: React.FC = () => {
   // Display the context result (for example, using a toast or modal)
   const displayContextResult = (contextResult: any) => {
     console.log("Context result:", contextResult);
-    toast.info(`Context: ${contextResult}`);
+    toast.info(`Highlight range: ${contextResult.relevant_range}`);
+    toast.info(`Context: ${contextResult.text}`);
 
     // const { distance, title, relevant_range, text } = contextResult;
   
