@@ -333,7 +333,6 @@ const TextEditor: React.FC = () => {
   };
 
   // Event handler to update cursor position
-  /// EVAN CHECK THIS OUT
   const handleCursorPosition = () => {
     const { selection } = editor;
     if (selection) {
@@ -361,12 +360,17 @@ const TextEditor: React.FC = () => {
   const getContextResult = async (cursor_utf16_index: number, document_text: string) => {
   try {
     // Call the backend function and pass cursor position and text content
+    let documentTitle = null;
+    if (title.length > 0) {
+      documentTitle = title;
+    }
     const contextResult = await invoke('context_search', {
       documentText: document_text,
       cursorUtf16Index: cursor_utf16_index,
       results: 1, // Adjust the number of results as needed
       contextSentences: 3, // Adjust the number of context sentences as needed
       workspaceId: workspaceId,
+      documentTitle,
     });
     console.log("Received context result:", contextResult);
     // You can now display the context result (e.g., in a toast or sidebar)
