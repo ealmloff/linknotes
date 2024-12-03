@@ -218,10 +218,7 @@ pub async fn context_search(
 
 #[tokio::test]
 async fn test_note_context() {
-    use crate::{
-        delete_workspace, load_workspace, remove_note, save_note,
-        unload_workspace,
-    };
+    use crate::{delete_workspace, load_workspace, remove_note, save_note, unload_workspace};
     _ = tracing_subscriber::fmt::try_init();
 
     let temp = std::env::temp_dir();

@@ -1,8 +1,9 @@
 use kalosm::language::{
-    accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document, EmbedderExt, Embedding, SentenceChunker
+    accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document,
+    EmbedderExt, Embedding, SentenceChunker,
 };
 use kalosm_learning::{
-    ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress
+    ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress,
 };
 use std::{ops::Range, sync::OnceLock};
 
@@ -126,7 +127,8 @@ impl TagClassifier {
         documents: &[ContextualDocument],
         progress: impl Fn(ClassifierProgress),
     ) -> Self {
-        static DEFAULT_EMBEDDED_DOCUMENTS: OnceLock<Vec<(String, Embedding<BertSpace>)>> = OnceLock::new();
+        static DEFAULT_EMBEDDED_DOCUMENTS: OnceLock<Vec<(String, Embedding<BertSpace>)>> =
+            OnceLock::new();
         if DEFAULT_EMBEDDED_DOCUMENTS.get().is_none() {
             let mut cached_doc_tags = Vec::new();
             let mut cached_doc_text = Vec::new();
