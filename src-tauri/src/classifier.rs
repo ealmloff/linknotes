@@ -1,10 +1,10 @@
 use kalosm::language::{
-    accelerated_device_if_available, Chunker, DefaultSentenceChunker, Document, SentenceChunker,
+    accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document, EmbedderExt, Embedding, SentenceChunker
 };
 use kalosm_learning::{
-    Classifier, ClassifierConfig, ClassifierProgress, TextClassifierDatasetBuilder,
+    ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress
 };
-use std::ops::Range;
+use std::{ops::Range, sync::OnceLock};
 
 use crate::{
     bert,
@@ -126,31 +126,65 @@ impl TagClassifier {
         documents: &[ContextualDocument],
         progress: impl Fn(ClassifierProgress),
     ) -> Self {
-        let device = accelerated_device_if_available().unwrap();
-        let mut tagged_documents = Vec::new();
-        let default_docs = default_documents();
-        for document in documents.iter().chain(default_docs.iter()) {
-            let text = document.document.body();
-            let chunks = chunk_text(text);
-            for tag in &document.tags {
-                let id = { workspace.get_tag_id(tag.name.as_str()) };
+        static DEFAULT_EMBEDDED_DOCUMENTS: OnceLock<Vec<(String, Embedding<BertSpace>)>> = OnceLock::new();
+        if DEFAULT_EMBEDDED_DOCUMENTS.get().is_none() {
+            let mut cached_doc_tags = Vec::new();
+            let mut cached_doc_text = Vec::new();
+            let default_docs = default_documents();
+            for document in &default_docs {
+                let text = document.document.body();
+                let chunks = chunk_text(text);
                 for chunk in &chunks {
-                    tagged_documents.push((&text[chunk.clone()], id));
+                    cached_doc_tags.push(document.tags.clone());
+                    cached_doc_text.push(&text[chunk.clone()]);
                 }
             }
+
+            let bert = bert().await.unwrap();
+            let embeddings = bert.embed_batch(&cached_doc_text).await.unwrap();
+
+            let mut tag_embeddings = Vec::new();
+            for (tags, embedding) in cached_doc_tags.into_iter().zip(embeddings.into_iter()) {
+                for tag in tags {
+                    tag_embeddings.push((tag.name, embedding.clone()));
+                }
+            }
+
+            DEFAULT_EMBEDDED_DOCUMENTS.set(tag_embeddings).unwrap();
         }
-        let class_count = { workspace.tag_count() as u32 };
+        let mut tagged_documents = DEFAULT_EMBEDDED_DOCUMENTS.get().unwrap().clone();
+        let mut new_document_tags = Vec::new();
+        let mut new_document_text = Vec::new();
+        for document in documents {
+            let text = document.document.body();
+            let chunks = chunk_text(text);
+            for chunk in &chunks {
+                new_document_tags.push(document.tags.clone());
+                new_document_text.push(&text[chunk.clone()]);
+            }
+        }
+
+        let bert = bert().await.unwrap();
+        let embeddings = bert.embed_batch(&new_document_text).await.unwrap();
+        for (tags, embedding) in new_document_tags.into_iter().zip(embeddings.into_iter()) {
+            for tag in tags {
+                tagged_documents.push((tag.name, embedding.clone()));
+            }
+        }
+
+        let class_count = workspace.tag_count() as u32;
         let config = ClassifierConfig::new().classes(class_count);
+        let device = accelerated_device_if_available().unwrap();
         let classifier = Classifier::new(&device, config).unwrap();
 
         let device = accelerated_device_if_available().unwrap();
         let epochs = 5;
         let learning_rate = 0.003;
         let batch_size = 50;
-        let bert = bert().await.unwrap();
-        let mut dataset = TextClassifierDatasetBuilder::<u32, _>::new(bert);
-        for (document, id) in tagged_documents {
-            dataset.add(document, id).await.unwrap();
+        let mut dataset = ClassificationDatasetBuilder::<u32>::new();
+        for (tag, embedding) in tagged_documents {
+            let id = workspace.get_tag_id(tag.as_str());
+            dataset.add(embedding.to_vec(), id);
         }
         let dataset = dataset.build(&device).unwrap();
         classifier
