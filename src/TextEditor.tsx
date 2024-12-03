@@ -361,6 +361,10 @@ const TextEditor: React.FC = () => {
   try {
     // Call the backend function and pass cursor position and text content
     let documentTitle = null;
+    // Don't try to provide context for an empty document
+    if (document_text.length  == 0) {
+      return;
+    }
     if (title.length > 0) {
       documentTitle = title;
     }
@@ -383,9 +387,7 @@ const TextEditor: React.FC = () => {
   
   // Display the context result (for example, using a toast or modal)
   const displayContextResult = (contextResult: any) => {
-    console.log("Context result:", contextResult);
-    toast.info(`Highlight range: ${contextResult.relevant_range}`);
-    toast.info(`Context: ${contextResult.text}`);
+    toast.info(`Context: ${contextResult}`);
 
     // const { distance, title, relevant_range, text } = contextResult;
   
