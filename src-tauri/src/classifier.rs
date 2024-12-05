@@ -1,10 +1,11 @@
 use kalosm::language::{
-    accelerated_device_if_available, Chunker, DefaultSentenceChunker, Document, SentenceChunker,
+    accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document,
+    EmbedderExt, Embedding, SentenceChunker,
 };
 use kalosm_learning::{
-    Classifier, ClassifierConfig, ClassifierProgress, TextClassifierDatasetBuilder,
+    ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress,
 };
-use std::ops::Range;
+use std::{ops::Range, sync::OnceLock};
 
 use crate::{
     bert,
@@ -125,39 +126,75 @@ impl TagClassifier {
         workspace: &Workspace,
         documents: &[ContextualDocument],
         progress: impl Fn(ClassifierProgress),
-    ) -> Self {
-        let device = accelerated_device_if_available().unwrap();
-        let mut tagged_documents = Vec::new();
-        let default_docs = default_documents();
-        for document in documents.iter().chain(default_docs.iter()) {
-            let text = document.document.body();
-            let chunks = chunk_text(text);
-            for tag in &document.tags {
-                let id = { workspace.get_tag_id(tag.name.as_str()) };
+    ) -> anyhow::Result<Self> {
+        static DEFAULT_EMBEDDED_DOCUMENTS: OnceLock<Vec<(String, Embedding<BertSpace>)>> =
+            OnceLock::new();
+        if DEFAULT_EMBEDDED_DOCUMENTS.get().is_none() {
+            let mut cached_doc_tags = Vec::new();
+            let mut cached_doc_text = Vec::new();
+            let default_docs = default_documents();
+            for document in &default_docs {
+                let text = document.document.body();
+                let chunks = chunk_text(text);
                 for chunk in &chunks {
-                    tagged_documents.push((&text[chunk.clone()], id));
+                    cached_doc_tags.push(document.tags.clone());
+                    cached_doc_text.push(&text[chunk.clone()]);
                 }
             }
+
+            let bert = bert().await.unwrap();
+            let embeddings = bert.embed_batch(&cached_doc_text).await.unwrap();
+
+            let mut tag_embeddings = Vec::new();
+            for (tags, embedding) in cached_doc_tags.into_iter().zip(embeddings.into_iter()) {
+                for tag in tags {
+                    tag_embeddings.push((tag.name, embedding.clone()));
+                }
+            }
+
+            DEFAULT_EMBEDDED_DOCUMENTS.set(tag_embeddings).unwrap();
         }
-        let class_count = { workspace.tag_count() as u32 };
+        let mut tagged_documents = DEFAULT_EMBEDDED_DOCUMENTS.get().unwrap().clone();
+        let mut new_document_tags = Vec::new();
+        let mut new_document_text = Vec::new();
+        for document in documents {
+            let text = document.document.body();
+            let chunks = chunk_text(text);
+            for chunk in &chunks {
+                new_document_tags.push(document.tags.clone());
+                new_document_text.push(&text[chunk.clone()]);
+            }
+        }
+
+        let bert = bert().await.unwrap();
+        let embeddings = bert.embed_batch(&new_document_text).await.unwrap();
+        for (tags, embedding) in new_document_tags.into_iter().zip(embeddings.into_iter()) {
+            for tag in tags {
+                tagged_documents.push((tag.name, embedding.clone()));
+            }
+        }
+
+        let epochs = 2;
+        let learning_rate = 0.003;
+        let batch_size = 50;
+        let mut dataset = ClassificationDatasetBuilder::<u32>::new();
+        for (tag, embedding) in tagged_documents {
+            let id = workspace.get_tag_id(tag.as_str());
+            let embedding_vec = embedding.to_vec();
+            dataset.add(embedding_vec, id);
+        }
+
+        // After we have added all of the tags to the dataset, get the class count and train the model
+        let class_count = workspace.tag_count() as u32;
         let config = ClassifierConfig::new().classes(class_count);
+        let device = accelerated_device_if_available().unwrap();
         let classifier = Classifier::new(&device, config).unwrap();
 
         let device = accelerated_device_if_available().unwrap();
-        let epochs = 5;
-        let learning_rate = 0.003;
-        let batch_size = 50;
-        let bert = bert().await.unwrap();
-        let mut dataset = TextClassifierDatasetBuilder::<u32, _>::new(bert);
-        for (document, id) in tagged_documents {
-            dataset.add(document, id).await.unwrap();
-        }
         let dataset = dataset.build(&device).unwrap();
-        classifier
-            .train(&dataset, epochs, learning_rate, batch_size, progress)
-            .unwrap();
+        classifier.train(&dataset, epochs, learning_rate, batch_size, progress)?;
 
-        Self { classifier }
+        Ok(Self { classifier })
     }
 
     pub async fn classify(
@@ -277,7 +314,9 @@ async fn test_tag_classifier() {
         name: "tag1".to_string(),
         manual: true,
     }];
-    save_note(title.clone(), text.clone(), workspace).await;
+    save_note(title.clone(), text.clone(), workspace)
+        .await
+        .unwrap();
     set_tags(title.clone(), tags.clone(), workspace)
         .await
         .unwrap();
@@ -293,7 +332,9 @@ async fn test_tag_classifier() {
             manual: true,
         },
     ];
-    save_note(title2.clone(), text2.clone(), workspace).await;
+    save_note(title2.clone(), text2.clone(), workspace)
+        .await
+        .unwrap();
     set_tags(title2.clone(), tags2.clone(), workspace)
         .await
         .unwrap();
@@ -315,7 +356,8 @@ async fn test_tag_classifier() {
             ],
             |_| {},
         )
-        .await;
+        .await
+        .unwrap();
     }
     delete_workspace(workspace);
     unload_workspace(workspace);

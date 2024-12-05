@@ -33,7 +33,10 @@ pub async fn search(
         .await
         .map_err(|e| e.to_string())?;
     let bert = bert().await.map_err(|e| e.to_string())?;
-    let embedding = bert.embed(text).await.map_err(|e| e.to_string())?;
+    let embedding = bert
+        .embed_for(EmbeddingInput::new(text, EmbeddingVariant::Query))
+        .await
+        .map_err(|e| e.to_string())?;
     let mut documents_with_all_tags = document_table
         .table()
         .db()
@@ -272,7 +275,8 @@ async fn test_note_context() {
         "my note is here".to_string(),
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     remove_note("mynote".to_string(), workspace).await;
 
     save_note(
@@ -280,11 +284,12 @@ async fn test_note_context() {
         "The math is mathing QED. The math is mathing QED. This is my note. The cat is here. Yes it is.".to_string(),
         workspace,
     )
-    .await;
+    .await.unwarp();
     let results =
         crate::search::context_search(None, "The cat is here".to_string(), 0, 1, 3, workspace)
             .await
             .unwrap();
+
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].title, "search-note");
     assert_eq!(

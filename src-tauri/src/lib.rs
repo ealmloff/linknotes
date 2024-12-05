@@ -25,7 +25,9 @@ async fn bert() -> anyhow::Result<&'static Arc<CachedEmbeddingModel<Bert>>> {
     let _guard = BERT_LOCK.lock().await;
     if BERT.get().is_none() {
         _ = BERT.set(
-            Bert::new()
+            Bert::builder()
+                .with_source(BertSource::snowflake_arctic_embed_small())
+                .build()
                 .await
                 .map(|e| Arc::new(e.cached(NonZero::new(2048).unwrap()))),
         );
@@ -76,7 +78,8 @@ async fn test_notes() {
         "my note is here".to_string(),
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     remove_note("mynote".to_string(), workspace).await;
 
     save_note(
@@ -84,7 +87,8 @@ async fn test_notes() {
         "my note is here".to_string(),
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     let results = crate::search::search("my note is here".to_string(), Vec::new(), 10, workspace)
         .await
         .unwrap();

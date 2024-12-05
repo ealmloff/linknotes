@@ -93,6 +93,9 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
         onChange={handleSearchChange}
         className="search-input"
         onFocus={() => setIsDropdownOpen(true)}
+        onKeyDown={() => {
+          performSearch(searchQuery, selectedTags);
+        }}
       />
       {isDropdownOpen && (
         <div className="search-dropdown">
@@ -110,7 +113,6 @@ const Search: React.FC<SearchProps> = ({ onTagClick, selectedTags, searchQuery, 
               </div>
             ))}
           </div>
-          <button onClick={() => performSearch(searchQuery, selectedTags)}>Search</button>
         </div>
       )}
     </div>
