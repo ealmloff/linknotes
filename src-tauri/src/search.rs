@@ -231,7 +231,8 @@ async fn test_note_context() {
         "my note is here".to_string(),
         workspace,
     )
-    .await;
+    .await
+    .unwrap();
     remove_note("mynote".to_string(), workspace).await;
 
     save_note(
@@ -239,7 +240,7 @@ async fn test_note_context() {
         "The math is mathing QED. The math is mathing QED. This is my note. The cat is here. Yes it is.".to_string(),
         workspace,
     )
-    .await;
+    .await.unwrap();
     let results = crate::search::context_search("The cat is here".to_string(), 0, 1, 3, workspace)
         .await
         .unwrap();

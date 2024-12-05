@@ -119,7 +119,11 @@ pub async fn get_tags(
 
 /// Save a note with a title, and contents in a workspace. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
-pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
+pub async fn save_note(
+    title: String,
+    text: String,
+    workspace_id: WorkspaceId,
+) -> Result<(), String> {
     tracing::info!("Add_note called");
     tracing::info!("Workspace added with id: {:?}", workspace_id);
 
@@ -168,7 +172,7 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
             .unwrap();
         // If this is the same as the note already in the db, just return
         if current_location.segments == segments && previous_document.document == document {
-            return;
+            return Ok(());
         }
         tags = previous_document.tags.clone();
         // Delete the old document if it exists
@@ -181,14 +185,17 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
     tags.retain(|tag| tag.manual);
     // Classify the document and add an automatic tag
     let mut contextual = ContextualDocument { document, tags };
-    let tag = workspace.classify(&contextual).await.unwrap();
+    let tag = workspace
+        .classify(&contextual)
+        .await
+        .map_err(|err| err.to_string())?;
     contextual.tags.push(tag);
 
     tracing::info!("Inserting document with id: {:?}", contextual);
     let document_id = document_table
         .insert_with_chunks(contextual, chunks)
         .await
-        .unwrap();
+        .map_err(|err| err.to_string())?;
     tracing::info!("Document inserted successfully");
 
     let location = ContextualDocumentLocation {
@@ -203,7 +210,7 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
             .create((DOCUMENT_NAME_TABLE, title.as_str()))
             .content(location)
             .await
-            .unwrap();
+            .map_err(|err| err.to_string())?;
     }
     // Otherwise, update it
     else {
@@ -211,8 +218,10 @@ pub async fn save_note(title: String, text: String, workspace_id: WorkspaceId) {
             .update((DOCUMENT_NAME_TABLE, title.as_str()))
             .content(location)
             .await
-            .unwrap();
+            .map_err(|err| err.to_string())?;
     }
+
+    Ok(())
 }
 
 /// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
@@ -275,7 +284,9 @@ async fn test_set_tags() {
     let workspace = load_workspace(temp);
     let title = "test-note".to_string();
     let text = "test note".to_string();
-    save_note(title.clone(), text.clone(), workspace).await;
+    save_note(title.clone(), text.clone(), workspace)
+        .await
+        .unwrap();
     let tags = vec![
         Tag {
             name: "tag1".to_string(),
@@ -292,7 +303,9 @@ async fn test_set_tags() {
 
     let title2 = "my-other-test-note".to_string();
     let text2 = "testing other note".to_string();
-    save_note(title2.clone(), text2.clone(), workspace).await;
+    save_note(title2.clone(), text2.clone(), workspace)
+        .await
+        .unwrap();
     let tags2 = vec![
         Tag {
             name: "tag2".to_string(),

@@ -122,7 +122,7 @@ impl Workspace {
         if classifier.is_none() {
             let document_table = self.document_table().await?;
             let documents = document_table.table().select_all().await?;
-            classifier = Some(TagClassifier::new(self, &documents, |_| {}).await);
+            classifier = Some(TagClassifier::new(self, &documents, |_| {}).await?);
         }
         let classifier = classifier.unwrap();
         let tag = classifier.classify(self, document).await?;

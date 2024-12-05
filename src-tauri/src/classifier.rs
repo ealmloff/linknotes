@@ -126,7 +126,7 @@ impl TagClassifier {
         workspace: &Workspace,
         documents: &[ContextualDocument],
         progress: impl Fn(ClassifierProgress),
-    ) -> Self {
+    ) -> anyhow::Result<Self> {
         static DEFAULT_EMBEDDED_DOCUMENTS: OnceLock<Vec<(String, Embedding<BertSpace>)>> =
             OnceLock::new();
         if DEFAULT_EMBEDDED_DOCUMENTS.get().is_none() {
@@ -189,11 +189,9 @@ impl TagClassifier {
             dataset.add(embedding.to_vec(), id);
         }
         let dataset = dataset.build(&device).unwrap();
-        classifier
-            .train(&dataset, epochs, learning_rate, batch_size, progress)
-            .unwrap();
+        classifier.train(&dataset, epochs, learning_rate, batch_size, progress)?;
 
-        Self { classifier }
+        Ok(Self { classifier })
     }
 
     pub async fn classify(
@@ -313,7 +311,7 @@ async fn test_tag_classifier() {
         name: "tag1".to_string(),
         manual: true,
     }];
-    save_note(title.clone(), text.clone(), workspace).await;
+    save_note(title.clone(), text.clone(), workspace).await.unwrap();
     set_tags(title.clone(), tags.clone(), workspace)
         .await
         .unwrap();
@@ -329,7 +327,9 @@ async fn test_tag_classifier() {
             manual: true,
         },
     ];
-    save_note(title2.clone(), text2.clone(), workspace).await;
+    save_note(title2.clone(), text2.clone(), workspace)
+        .await
+        .unwrap();
     set_tags(title2.clone(), tags2.clone(), workspace)
         .await
         .unwrap();
@@ -351,7 +351,8 @@ async fn test_tag_classifier() {
             ],
             |_| {},
         )
-        .await;
+        .await
+        .unwrap();
     }
     delete_workspace(workspace);
     unload_workspace(workspace);
