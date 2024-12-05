@@ -1,4 +1,4 @@
-use kalosm::language::*;
+use kalosm::{language::*, IntoEmbeddingIndexedTableSearchFilter};
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
 use surrealdb::sql::Id;
@@ -6,6 +6,11 @@ use surrealdb::sql::Id;
 use crate::bert;
 use crate::classifier::chunk_text;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
+
+#[derive(Serialize, Deserialize)]
+struct MetaId {
+    id: String,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct SearchResult {
@@ -42,11 +47,6 @@ pub async fn search(
         ))
         .await
         .map_err(|e| e.to_string())?;
-
-    #[derive(Serialize, Deserialize)]
-    struct MetaId {
-        id: String,
-    }
 
     let documents_with_all_tags: Vec<MetaId> =
         documents_with_all_tags.take(0).map_err(|e| e.to_string())?;
@@ -121,6 +121,8 @@ fn utf8_range_to_utf16_range(utf8_range: Range<usize>, text: &str) -> Range<usiz
 
 #[tauri::command]
 pub async fn context_search(
+    // The title of the document the cursor is in
+    document_title: Option<String>,
     // The entire text of the document we are generating context for
     document_text: String,
     // The character index of the cursor in utf16 bytes
@@ -132,7 +134,7 @@ pub async fn context_search(
     // The workspace to search in
     workspace_id: WorkspaceId,
 ) -> Result<Vec<ContextResult>, String> {
-    tracing::info!("Search called with text {:?}, character index {:?}, results {:?}, and context_sentences {:?}", document_text, cursor_utf16_index, results, context_sentences);
+    tracing::info!("Search called with title {:?}, text {:?}, character index {:?}, results {:?}, and context_sentences {:?}", document_title, document_text, cursor_utf16_index, results, context_sentences);
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace
         .document_table()
@@ -151,18 +153,21 @@ pub async fn context_search(
     let mut current_utf16_index = 0;
     for (byte_index, char) in document_text.char_indices() {
         current_utf16_index += char.len_utf16();
-        if current_utf16_index >= current_utf16_index {
+        if current_utf16_index >= cursor_utf16_index {
             cursor_byte_index = Some(byte_index);
         }
     }
     let cursor_byte_index = cursor_byte_index
         .ok_or_else(|| "Cannot search around a sentence that is not in the document".to_string())?;
+    tracing::info!("Cursor byte index: {:?}", cursor_byte_index);
     let cursor_sentence_index = sentences
         .iter()
         .position(|range| cursor_byte_index <= range.end)
         .unwrap_or(sentences.len() - 1);
+    tracing::info!("Cursor sentence index: {:?}", cursor_sentence_index);
     // Find 3 sentences around the cursor sentence
     let sentence_embedding_range = get_sentence_range(&sentences, cursor_sentence_index, 3);
+    tracing::info!("Sentence embedding range: {:?}", sentence_embedding_range);
     let context = sentences[sentence_embedding_range]
         .into_iter()
         .map(|range| &document_text[range.clone()])
@@ -175,12 +180,41 @@ pub async fn context_search(
         .embed(context)
         .await
         .map_err(|err| format!("{}", err))?;
+
     // And search for the nearest results
-    let nearest = document_table
-        .search(embedding)
-        .with_results(results)
-        .await
-        .map_err(|err| format!("{}", err))?;
+    let mut search = document_table.search(embedding).with_results(results);
+
+    // Filter out the current document from the search results if it has been saved
+    if let Some(document_title) = document_title {
+        // Get the ids of all documents with a different title
+        let mut all_other_document_ids = document_table
+            .table()
+            .db()
+            .query(format!(
+                "SELECT meta::id(id) as id FROM {} WHERE document.title != \"{}\"",
+                document_table.table().table(),
+                document_title
+            ))
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let all_other_document_ids: Vec<MetaId> =
+            all_other_document_ids.take(0).map_err(|e| e.to_string())?;
+
+        // Only include those documents in the search results
+        search = search.with_filter(
+            all_other_document_ids
+                .into_iter()
+                .map(|id| Id::String(id.id))
+                .into_embedding_indexed_table_search_filter(&document_table.table())
+                .await
+                .map_err(|e| e.to_string())?,
+        );
+    }
+
+    let nearest = search.await.map_err(|err| format!("{}", err))?;
+
+    tracing::info!("Nearest results: {:?}", nearest);
 
     Ok(nearest
         .into_iter()
@@ -200,7 +234,7 @@ pub async fn context_search(
                 get_sentence_range(&result_chunks, target_sentence, context_sentences);
 
             let context_utf8_range = result_chunks[context_sentence_range.start].start
-                ..result_chunks[context_sentence_range.end].end;
+                ..result_chunks[context_sentence_range.end - 1].end;
 
             let text = body[context_utf8_range.clone()].to_string();
             let distance = result.distance;
@@ -208,6 +242,13 @@ pub async fn context_search(
                 (target_sentence_utf8_range.start - context_utf8_range.start)
                     ..(target_sentence_utf8_range.end - context_utf8_range.start),
                 &text,
+            );
+            tracing::info!(
+                "Results: distance {:?} title {:?} relevant_range {:?} text {:?}",
+                distance,
+                title,
+                relevant_range,
+                text
             );
             ContextResult {
                 distance,
@@ -243,10 +284,12 @@ async fn test_note_context() {
         "The math is mathing QED. The math is mathing QED. This is my note. The cat is here. Yes it is.".to_string(),
         workspace,
     )
-    .await.unwrap();
-    let results = crate::search::context_search("The cat is here".to_string(), 0, 1, 3, workspace)
-        .await
-        .unwrap();
+    .await.unwarp();
+    let results =
+        crate::search::context_search(None, "The cat is here".to_string(), 0, 1, 3, workspace)
+            .await
+            .unwrap();
+
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].title, "search-note");
     assert_eq!(

@@ -17,6 +17,7 @@ type HeadingElement = { type: 'heading'; children: CustomText[] };
 type CustomText = { text: string; bold?: boolean };
 type CustomElement = ParagraphElement | HeadingElement;
 type CustomEditor = BaseEditor & ReactEditor & HistoryEditor;
+const threshold = 20;
 
 declare module 'slate' {
   interface CustomTypes {
@@ -50,6 +51,7 @@ const TextEditor: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [cursorPosition, setCursorPosition] = useState<number>(0); // Add state for cursor position
   const [activeTab, setActiveTab] = useState<string>('saved'); // Track active tab state
+  const [contextResults, setContextResults] = useState<any[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [darkMode, setDarkMode] = useState(true); // Default to dark mode
 
@@ -112,6 +114,8 @@ const TextEditor: React.FC = () => {
         return { title: doc.document.title, content: doc.document.body, tags: doc.tags };
       });
       setSavedNotes(notes);
+      // set cursor to 0
+      setCursorPosition(0);
     } catch (error) {
       console.error('Failed to load saved notes:', error);
       toast.error('Failed to load saved notes');
@@ -359,36 +363,83 @@ const TextEditor: React.FC = () => {
       }
       cursorIndex += anchor.offset;
 
-      setCursorPosition(cursorIndex);
+      // only update the cursor position if it has changed by a threshold value
+      if (Math.abs(cursorIndex - cursorPosition) > threshold) {
+        setCursorPosition(cursorIndex);
+        getContextResult(cursorIndex, Node.string(editor));
+      }
+      
+
+      // setCursorPosition(cursorIndex);
     }
   };
 
-  const getContextResult = async (cursorPosition: number, textContent: string) => {
-    try {
-      // Call the backend function and pass cursor position and text content
-      const contextResult = await invoke('get_context', {
-        cursorPosition,
-        textContent,
-        workspaceId,
-      });
-  
-      console.log("Received context result:", contextResult);
-      // You can now display the context result (e.g., in a toast or sidebar)
-      displayContextResult(contextResult);
-    } catch (error) {
-      console.error("Failed to get context:", error);
-      toast.error('Failed to get context');
+  const getContextResult = async (cursor_utf16_index: number, document_text: string) => {
+  try {
+    // Call the backend function and pass cursor position and text content
+    let documentTitle = null;
+    // Don't try to provide context for an empty document
+    if (document_text.length  == 0) {
+      return;
     }
+    if (title.length > 0) {
+      documentTitle = title;
+    }
+    const contextResults = await invoke('context_search', {
+      documentText: document_text,
+      cursorUtf16Index: cursor_utf16_index,
+      results: 3, // Adjust the number of results as needed
+      contextSentences: 2, // Adjust the number of context sentences as needed
+      workspaceId: workspaceId,
+      documentTitle,
+    }) as { distance: number, title: string, relevant_range: string, text: string }[];
+    console.log("Received context result:", contextResults);
+    // Sort results by distance
+    const sortedResults = contextResults.sort((a: any, b: any) => a.distance - b.distance);
+    setContextResults(sortedResults);
+    // You can now display the context result (e.g., in a toast or sidebar)
+    displayContextResult(contextResults);
+  } catch (error) {
+    console.error("Failed to get context:", error);
+    toast.error(`Failed to get context ${error}`);
+  }
   };
+  
+  const renderContextResults = () => {
+  return contextResults
+    .sort((a, b) => a.distance - b.distance) // Sort by distance
+    .map((result, index) => {
+      const { title, text, relevant_range } = result;
+      const beforeRelevant = text.slice(0, relevant_range.start);
+      const relevantText = text.slice(relevant_range.start, relevant_range.end);
+      const afterRelevant = text.slice(relevant_range.end);
+      
+      return (
+        <div key={index} className="context-result">
+          <div className="note-content">
+            <strong>{title}</strong>
+            <hr className="title-divider" />
+            <p>
+              {beforeRelevant}
+              <strong>{relevantText}</strong>
+              {afterRelevant}
+            </p>
+          </div>
+        </div>
+      );
+    });
+};
   
   // Display the context result (for example, using a toast or modal)
   const displayContextResult = (contextResult: any) => {
-    const { distance, title, relevant_range, text } = contextResult;
+    toast.info(`Context: ${contextResult}`);
+
+    // const { distance, title, relevant_range, text } = contextResult;
   
     // For example, display this in a toast notification
-    toast.info(
-      `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range.start} - ${relevant_range.end})`
-    );
+    // toast.info(
+    //   `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range})`
+    // );
   };
 
 
@@ -454,13 +505,14 @@ const TextEditor: React.FC = () => {
               Think Links
             </div>
           </div>
-          <div className="sidepanel-content" id="saved-notes" style={{ display: activeTab === 'saved' ? 'block' : 'none' }}>
+          <div className="sidepanel-content" id="saved-notes" style={{ display: activeTab === 'saved' ? 'block' : 'none'}}>
           {savedNotes.length > 0 ? (
             <ul>
               {savedNotes.map((note, index) => (
                 <li key={index} className="note-item" onClick={() => handleNoteSelect(note.title)}>
                 <div className="note-content">
-                  <strong>{note.title}</strong>
+                    <strong>{note.title}</strong>
+                    <hr className="title-divider" />
                   <span>{note.content.substring(0, 50)}...</span>
                 </div>
                 <div className="note-actions">
@@ -473,9 +525,9 @@ const TextEditor: React.FC = () => {
             <p>No notes saved yet.</p>
           )}
         </div>
-          <div className="sidepanel-content" id="other-panel" style={{ display: activeTab === 'other' ? 'block' : 'none' }}>
-                <p>No notes saved yet.</p>
-          </div>
+        <div className="sidepanel-content" id="other-panel" style={{ display: activeTab === 'other' ? 'block' : 'none', overflowY: 'auto', maxHeight: 'calc(100vh - 100px)' }}>
+          {renderContextResults()}
+        </div>
         </div>
         <div className="editor-content">
           <div className="editor-input">
