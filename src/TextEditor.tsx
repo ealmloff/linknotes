@@ -451,7 +451,7 @@ const TextEditor: React.FC = () => {
               className={`sidepanel-tab ${activeTab === 'other' ? 'active' : ''}`}
               onClick={() => handleTabClick('other')}
             >
-              Other Panel
+              Think Links
             </div>
           </div>
           <div className="sidepanel-content" id="saved-notes" style={{ display: activeTab === 'saved' ? 'block' : 'none' }}>
