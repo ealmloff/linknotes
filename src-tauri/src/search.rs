@@ -28,7 +28,10 @@ pub async fn search(
         .await
         .map_err(|e| e.to_string())?;
     let bert = bert().await.map_err(|e| e.to_string())?;
-    let embedding = bert.embed(text).await.map_err(|e| e.to_string())?;
+    let embedding = bert
+        .embed_for(EmbeddingInput::new(text, EmbeddingVariant::Query))
+        .await
+        .map_err(|e| e.to_string())?;
     let mut documents_with_all_tags = document_table
         .table()
         .db()

@@ -25,7 +25,9 @@ async fn bert() -> anyhow::Result<&'static Arc<CachedEmbeddingModel<Bert>>> {
     let _guard = BERT_LOCK.lock().await;
     if BERT.get().is_none() {
         _ = BERT.set(
-            Bert::new()
+            Bert::builder()
+                .with_source(BertSource::snowflake_arctic_embed_small())
+                .build()
                 .await
                 .map(|e| Arc::new(e.cached(NonZero::new(2048).unwrap()))),
         );
