@@ -398,7 +398,6 @@ const TextEditor: React.FC = () => {
     const sortedResults = contextResults.sort((a: any, b: any) => a.distance - b.distance);
     setContextResults(sortedResults);
     // You can now display the context result (e.g., in a toast or sidebar)
-    displayContextResult(contextResults);
   } catch (error) {
     console.error("Failed to get context:", error);
     toast.error(`Failed to get context ${error}`);
@@ -429,20 +428,6 @@ const TextEditor: React.FC = () => {
       );
     });
 };
-  
-  // Display the context result (for example, using a toast or modal)
-  const displayContextResult = (contextResult: any) => {
-    toast.info(`Context: ${contextResult}`);
-
-    // const { distance, title, relevant_range, text } = contextResult;
-  
-    // For example, display this in a toast notification
-    // toast.info(
-    //   `Context from ${title}: ${text} (Distance: ${distance}, Range: ${relevant_range})`
-    // );
-  };
-
-
   // Render functions
   const renderElement = useCallback((props: RenderElementProps) => {
     switch (props.element.type) {
