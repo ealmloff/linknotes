@@ -151,11 +151,11 @@ const TextEditor: React.FC = () => {
     setTags([]); // Clear the tags
     editor.children = INITIAL_VALUE;
     Transforms.select(editor, { path: [0, 0], offset: 0 });
-    toast.success('New note created');
+    // toast.success('New note created');
   };
 
   const handleSaveNote = useCallback(async () => {
-    toast.info('Preparing to save note');
+    // toast.info('Preparing to save note');
     const noteContent = JSON.stringify(value);
     const note = {
       title: title || 'Untitled',
@@ -235,7 +235,7 @@ const TextEditor: React.FC = () => {
 
       await loadTags(title);
 
-      toast.success(`Loaded note: ${title}`);
+      // toast.success(`Loaded note: ${title}`);
     } catch (error) {
       console.error('Failed to load note:', error);
       toast.error(`Failed to load note: ${error}`);
@@ -246,11 +246,20 @@ const TextEditor: React.FC = () => {
     if (event.metaKey && event.key === 'z') {
       event.preventDefault();
       editor.undo();
-      toast.info('Undo action performed');
+      // toast.info('Undo action performed');
     } else if (event.metaKey && event.key === 's') {
       event.preventDefault();
       handleSaveNote();
+    }else if (event.metaKey && event.key === 'n') {
+      event.preventDefault();
+      handleNewNote();
+    } else if (event.metaKey && event.key === 'y') {
+      event.preventDefault();
+      editor.redo();
+      // toast.info('Redo action performed');
     }
+    
+
   };
 
   const handleTagClick = (tag: string) => {
