@@ -186,7 +186,7 @@ button:hover {
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
-  margin: 5px 0;
+  margin: 5px 5px 5px 0;
   transition: background-color 0.3s ease, transform 0.2s ease;
   background-color: #3b82f6;
   /* Default color */
@@ -464,8 +464,50 @@ button:hover {
   background-color: #0ea5e9;
 }
 
-/* Light Blue */
+/* color-blind turquiose */
+.tag-color-11 {
+  background-color: #44BC99;
+}
 
+/* color-blind light blue */
+.tag-color-12 {
+  background-color: #99DEFE;
+}
+
+/* color-blind rose */
+.tag-color-13 {
+  background-color: #FEAABA;
+}
+
+/* color-blind yellow */
+.tag-color-14 {
+  background-color: #EDDD88;
+}
+
+/* color-blind orange */
+.tag-color-15 {
+  background-color: #EE8867;
+}
+
+/* color-blind blue */
+.tag-color-16 {
+  background-color: #77ABDD;
+}
+
+/* color-blind green */
+.tag-color-17 {
+  background-color: #AAAA01;
+}
+
+/* color-blind yellow-green */
+.tag-color-18 {
+  background-color: #BACC32;
+}
+
+/* Color-blind text color */
+.color-blind-text {
+  color: black !important;
+}
 
 /* Hover effect */
 .tag:hover {
@@ -578,12 +620,18 @@ button:hover {
   }
   
   .search-result {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    border-radius: 4px;
+    margin-bottom: 5px; /* Add margin to create space between results */
     background-color: #333;
     color: #f6f6f6;
   }
 
   .search-result:hover {
     background-color: #444;
+    transform: translateY(-2px);
   }
 
   .search-wrapper input {
