@@ -54,6 +54,7 @@ const TextEditor: React.FC = () => {
   const [contextResults, setContextResults] = useState<any[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [darkMode, setDarkMode] = useState(true); // Default to dark mode
+  const [isColorBlindMode, setIsColorBlindMode] = useState(false); // Add state for color-blind mode
 
   // Memoized values
   const editor = useMemo(() => withHistory(withReact(createEditor())), []);
@@ -339,6 +340,10 @@ const TextEditor: React.FC = () => {
     setDarkMode(!darkMode);
   };
 
+  const toggleColorBlindMode = () => {
+    setIsColorBlindMode(!isColorBlindMode);
+  };
+
   // File change handler
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -474,6 +479,9 @@ const TextEditor: React.FC = () => {
           <MenuItem onClick={toggleTheme}>
             {darkMode ? <FaSun /> : <FaMoon />} {darkMode ? 'Light Mode' : 'Dark Mode'}
           </MenuItem>
+          <MenuItem onClick={toggleColorBlindMode}>
+            {isColorBlindMode ? 'Disable Color-Blind Mode' : 'Enable Color-Blind Mode'}
+          </MenuItem>
         </Menu>
         <input
           type="file"
@@ -533,7 +541,7 @@ const TextEditor: React.FC = () => {
                 placeholder="Title"
                 className="title-input"
               />
-              <TagsPanel onTagClick={handleTagClick} tags={tags} onAddTag={handleAddTag} />
+              <TagsPanel onTagClick={handleTagClick} tags={tags} onAddTag={handleAddTag} isColorBlindMode={isColorBlindMode}/>
             </div>
           </div>
           <Slate 

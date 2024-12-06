@@ -5,9 +5,10 @@ interface TagsPanelProps {
   onTagClick: (tag: string) => void;
   tags: { name: string, manual: boolean }[];
   onAddTag: (tag: string) => void;
+  isColorBlindMode: boolean; // Add prop for color-blind mode
 }
 
-const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag }) => {
+const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag, isColorBlindMode }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [customTag, setCustomTag] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,7 +64,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag }) => 
     <div className="tags-panel">
       <div className="tags-list">
         {displayedTags.map((tag, index) => (
-          <Tag key={index} title={tag.name} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag.name)} />
+          <Tag key={index} title={tag.name} colorClass={`tag-color-${isColorBlindMode ? (index % 7) + 11 : (index % 10) + 1} ${isColorBlindMode ? 'color-blind-text' : ''}`} onClick={() => onTagClick(tag.name)} />
         ))}
       </div>
       <div className="menu-dots" onClick={toggleMenu}>⋮</div>
@@ -78,7 +79,7 @@ const TagsPanel: React.FC<TagsPanelProps> = ({ onTagClick, tags, onAddTag }) => 
             onKeyDown={addCustomTag}
           />
           {remainingTags.map((tag, index) => (
-            <Tag key={index} title={tag.name} colorClass={`tag-color-${(index % 5) + 1}`} onClick={() => onTagClick(tag.name)} />
+            <Tag key={index} title={tag.name} colorClass={`tag-color-${isColorBlindMode ? (index % 7) + 11 : (index % 10) + 1} ${isColorBlindMode ? 'color-blind-text' : ''}`} onClick={() => onTagClick(tag.name)} />
           ))}
         </div>
       )}
