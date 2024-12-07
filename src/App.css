@@ -152,7 +152,7 @@ button:hover {
   width: 100%;
   background-color: white;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   max-height: 200px;
@@ -247,6 +247,7 @@ button:hover {
   font-size: 30px;
   font-weight: bold;
   margin-top: 10px;
+  color: #F6C06B;
 }
 
 .editor-body {
@@ -291,6 +292,7 @@ button:hover {
   list-style-type: none;
   padding: 0;
   margin: 0;
+
 }
 
 .sidepanel li {
@@ -316,7 +318,7 @@ button:hover {
   margin-bottom: 5px;
 }
 
-/* Scrollbar styles for the sidepanel */
+/* Scrollbar styles for the sidepanel 
 .sidepanel::-webkit-scrollbar {
   width: 8px;
 }
@@ -326,14 +328,13 @@ button:hover {
 }
 
 .sidepanel::-webkit-scrollbar-thumb {
-  background: #888;
   border-radius: 4px;
 }
 
 .sidepanel::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
-
+*/
 .editor-input {
   margin-bottom: 10px;
 }
@@ -557,7 +558,7 @@ button:hover {
   .sidepanel li strong {
     color: #ccc;
   }
-
+/*
   .sidepanel::-webkit-scrollbar-track {
     background: #2a2a2a;
   }
@@ -569,6 +570,7 @@ button:hover {
   .sidepanel::-webkit-scrollbar-thumb:hover {
     background: #888;
   }
+*/
   .sidepanel-content {
     max-height: calc(100vh - 100px);
     overflow-y: auto;
@@ -672,6 +674,7 @@ button:hover {
     margin-bottom: 5px; /* Add margin to create space between results */
     background-color: #333;
     color: #f6f6f6;
+    border-color: #000000;
   }
 
   .search-result:hover {
@@ -762,7 +765,7 @@ button:hover {
   background: #ff4d4d;
   border: none;
   color: white;
-  padding: 5px 10px;
+  padding: 5px 10px; 
   cursor: pointer;
   border-radius: 4px;
   transition: background 0.3s;
@@ -840,14 +843,14 @@ button:hover {
 
 .note-actions {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: -20px;
+  right: 1px; /* Move more to the left */
 }
 
 .trash-icon {
   cursor: pointer;
   font-size: 18px;
-  color: #888;
+  color: #D9534F;
   transition: color 0.3s;
 }
 
@@ -952,25 +955,97 @@ body.light-mode .text-editor {
 body.light-mode .editor-header,
 body.light-mode .search-wrapper,
 body.light-mode .tags-panel,
-body.light-mode .new-note-btn,
-body.light-mode .save-note-btn,
-body.light-mode .import-btn,
-body.light-mode .menu-btn,
+body.light-mode .editor-header .new-note-btn,
+body.light-mode .editor-header .save-note-btn,
+body.light-mode .editor-header .import-btn,
+body.light-mode .editor-header .menu-btn,
 body.light-mode .sidepanel,
+body.light-mode .sidepanel-tab.active,
+body.light-mode .sidepanel-tabs,
 body.light-mode .title-input,
-body.light-mode .note-item,
+body.light-mode .sidepanel .note-item,
 body.light-mode .search-dropdown,
+body.light-mode .search-result,
+body.light-mode .search-result:hover,
+body.light-mode .context-result,
+body.light-mode .context-result strong,
+body.light-mode .context-result p,
 body.light-mode .sidepanel-content{
   background-color: #ffffff;
   color: #000000;
+  border: 1px solid #ffffff;
+}
+
+body.light-mode .search-result{
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  border-radius: 4px;
+  margin-bottom: 5px; /* Add margin to create space between results */
+  border-color: #ececec;
+  color: #000000; /* Keep text color */
+}
+
+body.light-mode .search-result:hover{
+  background-color: #ccc;
+  transform: translateY(-2px);
+  border-bottom: 2px solid #FBB039;
+}
+
+body.light-mode .editor-header .new-note-btn{
+  border-color: black;
+}
+
+body.light-mode .sidepanel{
   border: 1px solid #000000;
 }
+body.light-mode .editor-header .save-note-btn{
+  border-color: black;
+}
+
+body.light-mode .editor-header .import-btn{
+  border-color: black;
+}
+
+body.light-mode .editor-header .menu-btn{
+  border-color: black;
+}
+
+body.light-mode .title-input{
+  border-color: black;
+}
+
+body.light-mode .sidepanel-tab.active{
+  color: #FBB039;
+  border-color: white;
+  border-bottom: 2px solid #FBB039;
+}
+ 
+body.light-mode .sidepanel .note-item{
+  padding: 10px;
+  border-bottom: 2px solid #FBB039;
+}
+
+body.light-mode .editor-header{
+  border: white;
+}
+
+body.light-mode .sidepanel-tabs{
+  border-color: white;
+  border-bottom: 2px solid #FBB039;
+}
+
 
 body.light-mode .search-wrapper input {
   background-color: #ffffff;
   color: #000000;
 }
 
+body.light-mode .search-wrapper {
+  background-color: #ffffff; /* Keep background */
+  color: #000000;          /* Keep text color */
+  border: white;
+}
 body.light-mode .tags-panel {
   background-color: #ffffff;
   color: #000000;
@@ -989,4 +1064,87 @@ body.dark-mode .MuiMenuItem-root {
 
 body.dark-mode .MuiMenuItem-root:hover {
   background-color: #444444;
+}
+
+.context-result {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #000000;
+  border-color: #000000;
+  border-bottom: 2px solid #FBB039 ;
+}
+
+.context-result strong {
+  display: block;
+  font-size: 1.1em;
+  /* color: #444; */
+  margin-bottom: 5px;
+}
+
+.context-result p {
+  margin: 5px 0;
+}
+
+.text-editor .confirmation-dialog {
+  background-color: black;
+}
+
+.text-editor .confirmation-dialog p {
+  margin-bottom: 20px;
+}
+
+.text-editor .confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 20;
+}
+
+
+.text-editor .confirmation-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(255, 255, 255);
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 30;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.text-editor .confirmation-dialog p {
+  margin-bottom: 20px;
+}
+
+.text-editor .confirmation-dialog button {
+  background: #ff4d4d;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 0 10px;
+  transition: background 0.3s;
+}
+
+.text-editor .confirmation-dialog button:hover {
+  background: #ff1a1a;
+}
+
+.text-editor .confirmation-dialog button.cancel {
+  background: #ccc;
+  color: #333;
+}
+
+.text-editor .confirmation-dialog button.cancel:hover {
+  background: #999;
 }
