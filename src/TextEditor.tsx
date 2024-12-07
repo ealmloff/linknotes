@@ -480,7 +480,7 @@ const TextEditor: React.FC = () => {
             {darkMode ? <FaSun /> : <FaMoon />} {darkMode ? 'Light Mode' : 'Dark Mode'}
           </MenuItem>
           <MenuItem onClick={toggleColorBlindMode}>
-            {isColorBlindMode ? 'Disable Color-Blind Mode' : 'Enable Color-Blind Mode'}
+            {isColorBlindMode ? 'Disable Accessibility' : 'Enable Accessibility'}
           </MenuItem>
         </Menu>
         <input
