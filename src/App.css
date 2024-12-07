@@ -318,7 +318,7 @@ button:hover {
   margin-bottom: 5px;
 }
 
-/* Scrollbar styles for the sidepanel 
+/* Scrollbar styles for the sidepanel */
 .sidepanel::-webkit-scrollbar {
   width: 8px;
 }
@@ -334,7 +334,7 @@ button:hover {
 .sidepanel::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
-*/
+
 .editor-input {
   margin-bottom: 10px;
 }
@@ -342,7 +342,7 @@ button:hover {
 .context-result {
   padding: 10px;
   margin-bottom: 10px;
-  background-color: #fff;
+  background-color: #4A4A4A;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -558,7 +558,7 @@ button:hover {
   .sidepanel li strong {
     color: #ccc;
   }
-/*
+
   .sidepanel::-webkit-scrollbar-track {
     background: #2a2a2a;
   }
@@ -570,7 +570,7 @@ button:hover {
   .sidepanel::-webkit-scrollbar-thumb:hover {
     background: #888;
   }
-*/
+
   .sidepanel-content {
     max-height: calc(100vh - 100px);
     overflow-y: auto;
@@ -1066,7 +1066,7 @@ body.dark-mode .MuiMenuItem-root:hover {
   background-color: #444444;
 }
 
-.context-result {
+body.light-mode  .context-result {
   padding: 10px;
   margin-bottom: 10px;
   background-color: #ffffff;
@@ -1077,26 +1077,26 @@ body.dark-mode .MuiMenuItem-root:hover {
   border-bottom: 2px solid #FBB039 ;
 }
 
-.context-result strong {
+body.light-mode .context-result strong {
   display: block;
   font-size: 1.1em;
   /* color: #444; */
   margin-bottom: 5px;
 }
 
-.context-result p {
+body.light-mode .context-result p {
   margin: 5px 0;
 }
 
-.text-editor .confirmation-dialog {
+body.light-mode .text-editor .confirmation-dialog {
   background-color: black;
 }
 
-.text-editor .confirmation-dialog p {
+body.light-mode .text-editor .confirmation-dialog p {
   margin-bottom: 20px;
 }
 
-.text-editor .confirmation-overlay {
+body.light-mode .text-editor .confirmation-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -1107,7 +1107,7 @@ body.dark-mode .MuiMenuItem-root:hover {
 }
 
 
-.text-editor .confirmation-dialog {
+body.light-mode .text-editor .confirmation-dialog {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -1121,11 +1121,11 @@ body.dark-mode .MuiMenuItem-root:hover {
   text-align: center;
 }
 
-.text-editor .confirmation-dialog p {
+body.light-mode .text-editor .confirmation-dialog p {
   margin-bottom: 20px;
 }
 
-.text-editor .confirmation-dialog button {
+body.light-mode .text-editor .confirmation-dialog button {
   background: #ff4d4d;
   border: none;
   color: white;
@@ -1136,15 +1136,15 @@ body.dark-mode .MuiMenuItem-root:hover {
   transition: background 0.3s;
 }
 
-.text-editor .confirmation-dialog button:hover {
+body.light-mode .text-editor .confirmation-dialog button:hover {
   background: #ff1a1a;
 }
 
-.text-editor .confirmation-dialog button.cancel {
+body.light-mode .text-editor .confirmation-dialog button.cancel {
   background: #ccc;
   color: #333;
 }
 
-.text-editor .confirmation-dialog button.cancel:hover {
+body.light-mode .text-editor .confirmation-dialog button.cancel:hover {
   background: #999;
 }
