@@ -397,13 +397,13 @@ button:hover {
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  right: 0;
-  background-color: #fff;
+  right: 0%;
+  background-color: #ffffff;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  width: 150px;
+  width: relative;
 }
 
 .dropdown-item {
@@ -621,10 +621,10 @@ button:hover {
     background-color: #0f0f0f69;
   }
 
-  .tags-panel {
+   .tags-panel {
     background-color: #2a2a2a;
     border-color: #444;
-  }
+  } 
 
   .tags-panel .tags-message {
     color: #e0e0e0;
@@ -635,17 +635,17 @@ button:hover {
   }
 
   .dropdown-menu {
-    background-color: #333;
-    border-color: #555;
+    background-color: #444;
+    border-color: #555; 
   }
 
   .dropdown-item {
     color: #f6f6f6;
   }
 
-  .dropdown-item:hover {
+   .dropdown-item:hover {
     background-color: #444;
-  }
+  } 
 
   .search-input {
     background-color: #333;
@@ -952,6 +952,9 @@ body.light-mode .text-editor {
   color: #000000;
 }
 
+body.light-mode .dropdown-menu,
+body.light-mode .dropdown-item,
+body.light-mode .dropdown-item:hover,
 body.light-mode .editor-header,
 body.light-mode .search-wrapper,
 body.light-mode .tags-panel,
@@ -1147,4 +1150,18 @@ body.light-mode .text-editor .confirmation-dialog button.cancel {
 
 body.light-mode .text-editor .confirmation-dialog button.cancel:hover {
   background: #999;
+}
+
+body.light-mode .dropdown-menu {
+  background-color: hwb(0 100% 0%);
+}
+
+body.light-mode .dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+body.light-mode .dropdown-item:hover {
+  background-color: #f0f0f0;
 }
