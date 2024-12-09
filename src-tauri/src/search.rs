@@ -3,10 +3,10 @@
 ## Name of Code Artifact: Search Application Framework
 
 ## Brief Description: This code provides a framework for searching notes, including functionality to search for notes based on text and tags, as well as to search for context around a cursor position in a note. It integrates with Tauri for application development.
-## Programmer’s Name: Evan Almoff
+## Programmer’s Name: Evan Almloff
 
 ## Date Created: 2024-10-14
-## Dates Revised and Description of Revisions: 
+## Dates Revised and Description of Revisions:
 ## -> 2024-10-15: Added search functionality and workspace management.
 ## -> 2024-10-16: Improved search functionality and added error handling.
 ## -> 2024-10-17: Fixed bugs and improved performance.
@@ -15,36 +15,42 @@
 ## -> 2024-12-08: Finalized documentation and testing.
 
 
-## Preconditions: A Tauri application context is required for the run function.
-The BERT model must be initialized using the bert function before using search functionalities dependent on embeddings.
-Workspaces must be loaded for note-related operations.
-Acceptable and Unacceptable Input Values/Types:
+## Preconditions:
+- A Tauri application context is required for the run function.
+- Workspaces must be loaded before any note-related operations are called.
+- Notes must be saved before they are loaded or included in search results.
+
+## Acceptable and Unacceptable Input Values/Types:
+- Each tauri command takes an object with types defined by the type definition in the code. Arguments are represented as
+fields in that object.
 
 ## Postconditions:
 
-### Searches return relevant results based on embeddings or fail with descriptive errors.
+- Searches return relevant results based on embeddings or fail with descriptive errors.
 
 ## Return Values/Types:
 
-### Functions return Result types with success yielding appropriate outputs (e.g., search results, note metadata).
-### Errors are encapsulated in the anyhow::Result type for robust error handling.
-### Error and Exception Condition Values/Types: anyhow::Error: 
--> For general errors. 
--> Initialization errors for BERT or issues with workspace paths are raised.
--> File I/O errors occur when accessing or modifying workspace files.
+- Functions return Result types with success yielding appropriate outputs (e.g., search results, note metadata).
+- Errors are encapsulated in the anyhow::Result type for robust error handling.
+-  Error and Exception Condition Values/Types: anyhow::Error:
+    -> For general errors.
+    -> Initialization errors for BERT or issues with workspace paths are raised.
+    -> File I/O errors occur when accessing or modifying workspace files.
+
 ## Side Effects:
-### Workspace files may be created, modified, or deleted based on the function.
-### A global singleton (BERT) is initialized, consuming system resources.
+-  Workspace files may be created, modified, or deleted based on the function.
+- A global singleton (BERT) is lazily initialized, consuming system resources.
 
 ## Invariants:
 
-### Once initialized, the BERT model remains immutable.
-### Workspace states should remain consistent after note operations.
+- Once initialized, the BERT model remains immutable.
+- Note operations should not create or remove workspaces.
 
 ## Known Faults:
 
-### Potential performance bottleneck during embedding generation if BERT initialization is delayed.
-### Edge cases with workspace paths or malformed input data may cause unexpected behavior.
+- Potential performance bottleneck during embedding generation if BERT initialization is delayed.
+- Edge cases with workspace paths or malformed input data may cause unexpected behavior.
+- Loading the first note takes a long time because the training model needs to run on the default training notes.
 
 */
 
@@ -53,15 +59,16 @@ use serde::{Deserialize, Serialize}; // Import the necessary modules from the se
 use std::ops::Range; // Import the Range module from the standard library.
 use surrealdb::sql::Id; // Import the Id module from the surrealdb crate.
 
-use crate::bert;    // Import the bert module from the current crate.
+// Import the bert embedding model, methods to chunk text and use the workspace
+use crate::bert;
 use crate::classifier::chunk_text;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
 
+/// An id of a surrealdb object. This type is only used for deserialization of a database query
 #[derive(Serialize, Deserialize)]
 struct MetaId {
     id: String, // The id of the document
-} 
-
+}
 
 // Represents the result of a search operation.
 //
@@ -77,28 +84,32 @@ pub struct SearchResult {
     pub character_range: Range<usize>,
 }
 
-
-// / Queries the database for documents that contain all specified tags.
-// /
-// / This function constructs and executes a SQL query to retrieve the IDs of documents
-// / from the `document_table` that contain all the tags specified in the `tags` vector.
-// / The query uses the `CONTAINSALL` function to ensure that all tags are present in the
-// / document's tags.
-// /
-// / # Arguments
-// /
-// / * `document_table` - A reference to the table containing the documents.
-// / * `tags` - A vector of tags that the documents must contain.
-// /
-// / # Returns
-// /
-// / A `Result` containing a vector of document IDs if the query is successful, or an error
-// / message as a `String` if the query fails.
-// /
-// / # Errors
-// /
-// / This function will return an error if the query execution fails or if there is an issue
-// / with serializing the `tags` vector to a JSON string.
+/// Queries the database for documents that contain all specified tags.
+///
+/// This function constructs and executes a SQL query to retrieve the IDs of documents
+/// from the `document_table` that contain all the tags specified in the `tags` vector.
+/// The query uses the `CONTAINSALL` function to ensure that all tags are present in the
+/// document's tags.
+///
+/// # Arguments
+///
+/// * `text` - A string containing the search query.
+/// * `tags` - A vector of tags that the returned documents must contain.
+/// * `results` - The number of results to return.
+/// * `workspace_id` - The ID of the workspace to search in.
+///
+/// # Returns
+///
+/// A `Result` containing a vector of document IDs if the query is successful, or an error
+/// message as a `String` if the query fails.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// - The workspace does not exist
+/// - The tags do not exist in the database
+/// - the query execution fails
+/// - if there is an issue serializing or deserializing the database query and result
 #[tauri::command]
 pub async fn search(
     text: String,
@@ -117,7 +128,7 @@ pub async fn search(
         .embed_for(EmbeddingInput::new(text, EmbeddingVariant::Query))
         .await
         .map_err(|e| e.to_string())?;
-    
+
     let mut documents_with_all_tags = document_table
         .table()
         .db()
@@ -163,6 +174,7 @@ pub async fn search(
         .collect())
 }
 
+/// Represents the result of a context search operation. It contains the utf16 index of the most relevant section of the search result within [`ContextResult::text`]
 #[derive(Serialize, Deserialize)]
 pub struct ContextResult {
     // The distance from the search result to the cursor
@@ -176,30 +188,73 @@ pub struct ContextResult {
 }
 
 // Take a list of sentence ranges and return the range of sentences of a specific length around the target sentence
-fn get_sentence_range( // Function to get the range of sentences of a specific length around the target sentence.
-    sentences: &[Range<usize>], // A slice of sentence ranges.
+fn get_sentence_range(
+    // A list of sentence ranges within some text
+    sentences: &[Range<usize>],
+    // The index of the sentence we should try to center the range around
     target_sentence_index: usize,
+    // The number of sentences to include in the range
     sentences_to_include: usize,
 ) -> Range<usize> {
     let sentence_embedding_range_end =
         (target_sentence_index + sentences_to_include / 2).min(sentences.len()); // The end of the sentence embedding range.
-    let sentence_embedding_range_start = 
+    let sentence_embedding_range_start =
         sentence_embedding_range_end.saturating_sub(sentences_to_include); // The start of the sentence embedding range.
     sentence_embedding_range_start..sentence_embedding_range_end // Return the range of sentences of a specific length around the target sentence.
 }
 
+/// Convert a utf8 byte range to a utf16 byte range. When passing a byte range from rust to javascript, we need to convert the utf8
+/// indexes to utf16 indexes. This function takes a utf8 byte range and converts it to a utf16 byte range.
+///
+/// If we did not convert between utf8 and utf16 indexes, emojis and other special characters would not be handled correctly. utf encodes
+/// characters in a variable number of bytes. How many bytes a character takes depends on the character and the encoding (utf8, utf16, etc.).
+///
+/// # Arguments
+///
+/// * `utf8_range` - The range of bytes in the original text.
+/// * `text` - The original text.
+///
+/// # Returns
+///
+/// A range of utf16 byte indexes.
 fn utf8_range_to_utf16_range(utf8_range: Range<usize>, text: &str) -> Range<usize> {
-    let utf16_start = text[..utf8_range.start]
+    let utf16_start = text[..utf8_range.start] // Get the text before the start of the range
         .chars() // Convert the text to a character iterator.
         .map(|c| c.len_utf16()) // Map each character to its utf16 length.
         .sum(); // Sum the utf16 lengths of all characters before the range.
-    let utf16_len: usize = text[utf8_range.start..utf8_range.end] // Get the utf16 length of the range.
-        .chars()
+    let utf16_len: usize = text[utf8_range.start..utf8_range.end] // Get the text inside the range
+        .chars() // Convert the text to a character iterator.
         .map(|c| c.len_utf16()) // Map each character to its utf16 length.
-        .sum();
+        .sum(); // Sum the utf16 lengths of all characters inside the range.
     utf16_start..utf16_start + utf16_len // Return the utf16 range.
 }
 
+/// Queries the database for documents that are related to text around the cursor in some text.
+///
+/// This function constructs and executes a SQL query to retrieve the IDs of documents
+/// from the `document_table` with similar meaning to the text around the cursor.
+///
+/// # Arguments
+///
+/// * `document_title` - The title of the document the cursor is in or None if the cursor is not in a document.
+/// * `document_text` - The entire text of the document the cursor is ine.
+/// * `cursor_utf16_index` - The character index of the cursor within that document in utf16 bytes.
+/// * `results` - The number of results to return.
+/// * `context_sentences` - The number of sentences of context to return around the search result.
+/// * `workspace_id` - The ID of the workspace to search in.
+///
+/// # Returns
+///
+/// A `Result` containing a vector of search results if the query is successful, or an error
+/// message as a `String` if the query fails.
+///
+/// # Errors
+///
+/// This function will return an error if:
+/// - The document title is both Some and not saved in the database
+/// - The workspace does not exist
+/// - the query execution fails
+/// - if there is an issue serializing or deserializing the database query and result
 #[tauri::command]
 pub async fn context_search(
     // The title of the document the cursor is in
@@ -365,7 +420,7 @@ async fn test_note_context() {
         "The math is mathing QED. The math is mathing QED. This is my note. The cat is here. Yes it is.".to_string(),
         workspace,
     )
-    .await.unwarp();
+    .await.unwrap();
     let results =
         crate::search::context_search(None, "The cat is here".to_string(), 0, 1, 3, workspace)
             .await

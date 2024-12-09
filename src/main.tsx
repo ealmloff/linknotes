@@ -5,7 +5,7 @@ the DOM. Here is a breakdown of what each part of the code is doing: */
 
 /**
  * Description: This file is the main entry point for the React application. It renders the `App` component into the DOM.
- * Programmer's Name: Ealmoff
+ * Programmer's Name: EAlmloff
  * Date Created: 10/14/2024
  * Date Revised: 10/14/2024
  * Revision Description: Initial commit

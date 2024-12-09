@@ -2,8 +2,8 @@
 # Natural Language Processing and Classification Framework
 # Description: This Rust module integrates components for processing, embedding, and classifying textual data using the `kalosm` crate. It provides functionalities that are particularly suited for building applications involving natural language understanding and context-aware classification. Below is a summary of the key features and components:
 
-## Programmers: Ealmoff, Suhaan
-## Date created: 2024-10-14 
+## Programmers: EAlmloff, Suhaan
+## Date created: 2024-10-14
 ## Last modified: 2024-12-08
 ## Revision: -> Trained model with new notes and tags
 
@@ -16,8 +16,8 @@ The `chunk_text` function processes raw text, splitting it into meaningful chunk
 Leveraging the `kalosm::language` module, the code uses BERT-based embeddings (`BertSpace`) to represent textual data in a high-dimensional vector space. These embeddings capture semantic and contextual information, which is critical for classification tasks.
 
 ### Classification System
-- **Tag Classification**: Implements a `TagClassifier` for associating textual data with predefined tags. The classifier is trained using embeddings and corresponding tag associations.
-- **Data Handling**: Utilizes `ClassificationDatasetBuilder` to prepare data for training a classifier.
+- **Tag Classification**: Implements a `TagClassifier` for associating textual data with predefined tags. The classifier is trained using embeddings and corresponding tag associations. It learns to predict the tags of each sentence based on existing documents.
+- **Data Handling**: Utilizes `ClassificationDatasetBuilder` to prepare data for training a classifier. The classifier is generic over the output type. In this case, it is just a `u32` which represents the index of the tag in the workspace's list of tags.
 - **Model Configuration**: Supports hyperparameter customization such as learning rate, batch size, and training epochs.
 
 ### Contextual Document Management
@@ -31,10 +31,10 @@ Includes constants referencing various notes stored in text files. These notes a
 ### Imports
 - **Natural Language Processing**: Includes modules for embedding, chunking, and device acceleration (`kalosm::language`).
 - **Learning and Classification**: Provides tools for dataset preparation and classification (`kalosm_learning`).
-- **Synchronization Utilities**: Utilizes `OnceLock` for thread-safe initialization of shared resources.
+- **Synchronization Utilities**: Utilizes `OnceLock` for thread-safe initialization of lazy shared resources.
 
 ### Core Functions
-- **`chunk_text`**: Processes input text into chunks and sentences, returning ranges of character indices for each segment.
+- **`chunk_text`**: Processes input text into chunks and sentences, returning ranges of byte indices for each segment.
 - **`default_documents`**: Initializes a set of sample `ContextualDocument` instances with associated tags.
 
 ### Class Definitions
@@ -51,15 +51,11 @@ This code is designed for natural language processing applications such as:
 - Semantic search and retrieval
 */
 
-
-
-
-
-// importing modules from the `kalosm` crate related to natural language processing tasks. 
+// importing modules from the `kalosm` crate related to natural language processing tasks.
 // It includes imports for features such as accelerated
 // device availability, BertSpace, Chunker, Document, EmbedderExt, Embedding, SentenceChunker, and
-// DefaultSentenceChunker. These modules are likely used for tasks such as text chunking, document
-// processing, and embedding operations in natural language processing applications.
+// DefaultSentenceChunker. These modules are used for tasks such as text chunking, document
+// processing, and embedding operations while classifying notes
 use kalosm::language::{
     accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document,
     EmbedderExt, Embedding, SentenceChunker,
@@ -69,47 +65,51 @@ use kalosm::language::{
 use kalosm_learning::{
     ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress,
 };
-// The `OnceLock` struct is used for synchronization in Rust to ensure
-// that a certain block of code is only executed once, even in a multi-threaded context.
+// A range defines a range of values (in this file, bytes).
+// The `OnceLock` struct is a mutithreaded lock that can only be set once. In this file, we use it to lazily
+// create the embeddings for the default documents.
 use std::{ops::Range, sync::OnceLock};
 
-// Creating a crate and defining a module that includes the `bert`, `note`, and `workspace` modules. 
-// It also includes a struct `ContextualDocument` and an
-// enum `Tag` from the `note` module. 
-//This code is setting up the structure and dependencies for a workspace in a Rust project.
+// Import `bert`, `note`, and `workspace` modules from the current crate which will be used later in this file.
 use crate::{
     bert,
     note::{ContextualDocument, Tag},
     workspace::Workspace,
 };
 
-// / The `chunk_text` function in Rust splits text into chunks based on bullet points and sentence
-// / boundaries.
-// / 
-// / Arguments:
-// / 
-// / * `text`: The `chunk_text` function takes a text input and splits it into chunks based on certain
-// / criteria. It first splits the text based on bullet points or numbered lists, then further splits
-// / each chunk into individual sentences.
-// / 
-// / Returns:
-// / 
-// / The `chunk_text` function returns a vector of `Range<usize>`, which represents the ranges of text
-// / segments after processing based on bullet points and sentence splitting.
+/// The `chunk_text` function in Rust splits text into chunks based on bullet points and sentence
+/// boundaries.
+///
+/// Arguments:
+///
+/// * `text`: The `chunk_text` function takes a text input and splits it into chunks based on certain
+/// criteria. It first splits the text based on bullet points or numbered lists, then further splits
+/// each chunk into individual sentences.
+///
+/// Returns:
+///
+/// The `chunk_text` function returns a vector of `Range<usize>` which represents the ranges of text
+/// segments after processing based on bullet points and sentence splitting. Each range is a utf8 byte
+/// range of the section of the original text for a sentence.
 pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
     // First split based on bullet points
     let mut segments = Vec::new(); // Vector to store the ranges of text segments
     let mut last_idx = 0; // Index to keep track of the last processed index
     let mut iter = text.char_indices(); // Iterator over the characters in the text
-    let mut add_line = |text: &str, range: Range<usize>, last_idx: &mut usize| { // Function to add a line to the segments
+    let mut add_line = |text: &str, range: Range<usize>, last_idx: &mut usize| {
+        // Function to add a line to the segments
         let line = &text[range.clone()]; // Get the line based on the range
         let mut line_chars = line.char_indices().skip_while(|(_, c)| c.is_whitespace()); // Iterator over the characters in the line
-        match line_chars.next() { // Match on the first character in the line
-            Some((idx, '-')) => { // If the first character is a hyphen
+        match line_chars.next() {
+            // Match on the first character in the line
+            Some((idx, '-')) => {
+                // If the first character is a hyphen
                 let mut idx = idx; // Initialize the index
-                while let Some((new_idx, c)) = line_chars.next() { // Iterate over the characters in the line
+                while let Some((new_idx, c)) = line_chars.next() {
+                    // Iterate over the characters in the line
                     idx = new_idx; // Update the index
-                    if !c.is_whitespace() { // If the character is not whitespace
+                    if !c.is_whitespace() {
+                        // If the character is not whitespace
                         break;
                     }
                 }
@@ -117,11 +117,14 @@ pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
                 *last_idx = range.end; // Update the last index
                 segments.push(range); // Add the range to the segments
             }
-            Some((idx, c)) if c.is_numeric() => { // If the first character is numeric
+            Some((idx, c)) if c.is_numeric() => {
+                // If the first character is numeric
                 let mut idx = idx; // Initialize the index
-                while let Some((new_idx, c)) = line_chars.next() { // Iterate over the characters in the line
+                while let Some((new_idx, c)) = line_chars.next() {
+                    // Iterate over the characters in the line
                     idx = new_idx; // Update the index
-                    if !(c.is_numeric() || c == ')' || c == '.' || c.is_whitespace()) { // If the character is not numeric, a closing parenthesis, a period, or whitespace
+                    if !(c.is_numeric() || c == ')' || c == '.' || c.is_whitespace()) {
+                        // If the character is not numeric, a closing parenthesis, a period, or whitespace
                         break;
                     }
                 }
@@ -133,28 +136,34 @@ pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
         }
     };
     loop {
-        match iter.next() { // Match on the next character in the text
-            Some((idx, '\n')) => { // If the character is a newline
+        match iter.next() {
+            // Match on the next character in the text
+            Some((idx, '\n')) => {
+                // If the character is a newline
                 add_line(&text, last_idx..idx, &mut last_idx); // Add the line to the segments
             }
             Some((_, _)) => continue, // If the character is not a newline, continue to the next character
-            None => break, // If there are no more characters, break out of the loop
+            None => break,            // If there are no more characters, break out of the loop
         }
     }
     add_line(&text, last_idx..text.len(), &mut last_idx); // Add the last line to the segments
-    if last_idx < text.len() { // If there are characters remaining in the text
+    if last_idx < text.len() {
+        // If there are characters remaining in the text
         let remaining = &text[last_idx..]; // Get the remaining text
         let mut idx = 0; // Initialize the index
         let mut iter = remaining.char_indices(); // Iterator over the characters in the remaining text
-        while let Some((new_idx, c)) = iter.next() { // Iterate over the characters in the remaining text
+        while let Some((new_idx, c)) = iter.next() {
+            // Iterate over the characters in the remaining text
             idx = new_idx; // Update the index
-            if !c.is_whitespace() { // If the character is not whitespace
+            if !c.is_whitespace() {
+                // If the character is not whitespace
                 break;
             }
         }
         let mut back_idx = remaining.len(); // Initialize the back index
         let mut iter = remaining.char_indices().rev(); // Reverse iterator over the characters in the remaining text
-        while let Some((new_idx, c)) = iter.next() { // Iterate over the characters in the remaining text
+        while let Some((new_idx, c)) = iter.next() {
+            // Iterate over the characters in the remaining text
             if !c.is_whitespace() {
                 break;
             }
@@ -348,9 +357,9 @@ const PHILOSOPHY_NOTE: &str = include_str!("./classifier-notes/philosophy.note")
 
 // The function `default_documents` returns a vector of `ContextualDocument` instances with associated
 // tags.
-// 
+//
 // Returns:
-// 
+//
 // A vector of `ContextualDocument` structs is being returned. Each `ContextualDocument` contains a
 // `Document` and a vector of `Tag`s. The documents include topics such as "Intro to Integrals", "SIMD
 // Intro", "Discrete Math", "Statistics", "Reactivity systems", "Operating Systems", "History",
@@ -411,7 +420,7 @@ fn default_documents() -> Vec<ContextualDocument> {
             tags: vec![Tag {
                 name: "Philosophy".to_string(),
                 manual: true,
-                }],
+            }],
         },
         ContextualDocument {
             document: Document::from_parts("Science", SCIENCE_NOTE),
@@ -427,7 +436,6 @@ fn default_documents() -> Vec<ContextualDocument> {
                 manual: true,
             }],
         },
-        
     ]
 }
 
