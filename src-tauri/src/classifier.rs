@@ -55,47 +55,47 @@ This code is designed for natural language processing applications such as:
 
 
 
-/// importing modules from the `kalosm` crate related to natural language processing tasks. 
-/// It includes imports for features such as accelerated
-/// device availability, BertSpace, Chunker, Document, EmbedderExt, Embedding, SentenceChunker, and
-/// DefaultSentenceChunker. These modules are likely used for tasks such as text chunking, document
-/// processing, and embedding operations in natural language processing applications.
+// importing modules from the `kalosm` crate related to natural language processing tasks. 
+// It includes imports for features such as accelerated
+// device availability, BertSpace, Chunker, Document, EmbedderExt, Embedding, SentenceChunker, and
+// DefaultSentenceChunker. These modules are likely used for tasks such as text chunking, document
+// processing, and embedding operations in natural language processing applications.
 use kalosm::language::{
     accelerated_device_if_available, BertSpace, Chunker, DefaultSentenceChunker, Document,
     EmbedderExt, Embedding, SentenceChunker,
 };
-/// Importing module to build a classification dataset, configure a classifier, and track the progress of the
-/// classifier.
+// Importing module to build a classification dataset, configure a classifier, and track the progress of the
+// classifier.
 use kalosm_learning::{
     ClassificationDatasetBuilder, Classifier, ClassifierConfig, ClassifierProgress,
 };
-/// The `OnceLock` struct is used for synchronization in Rust to ensure
-/// that a certain block of code is only executed once, even in a multi-threaded context.
+// The `OnceLock` struct is used for synchronization in Rust to ensure
+// that a certain block of code is only executed once, even in a multi-threaded context.
 use std::{ops::Range, sync::OnceLock};
 
-/// Creating a crate and defining a module that includes the `bert`, `note`, and `workspace` modules. 
-/// It also includes a struct `ContextualDocument` and an
-/// enum `Tag` from the `note` module. 
-///This code is setting up the structure and dependencies for a workspace in a Rust project.
+// Creating a crate and defining a module that includes the `bert`, `note`, and `workspace` modules. 
+// It also includes a struct `ContextualDocument` and an
+// enum `Tag` from the `note` module. 
+//This code is setting up the structure and dependencies for a workspace in a Rust project.
 use crate::{
     bert,
     note::{ContextualDocument, Tag},
     workspace::Workspace,
 };
 
-/// The `chunk_text` function in Rust splits text into chunks based on bullet points and sentence
-/// boundaries.
-/// 
-/// Arguments:
-/// 
-/// * `text`: The `chunk_text` function takes a text input and splits it into chunks based on certain
-/// criteria. It first splits the text based on bullet points or numbered lists, then further splits
-/// each chunk into individual sentences.
-/// 
-/// Returns:
-/// 
-/// The `chunk_text` function returns a vector of `Range<usize>`, which represents the ranges of text
-/// segments after processing based on bullet points and sentence splitting.
+// / The `chunk_text` function in Rust splits text into chunks based on bullet points and sentence
+// / boundaries.
+// / 
+// / Arguments:
+// / 
+// / * `text`: The `chunk_text` function takes a text input and splits it into chunks based on certain
+// / criteria. It first splits the text based on bullet points or numbered lists, then further splits
+// / each chunk into individual sentences.
+// / 
+// / Returns:
+// / 
+// / The `chunk_text` function returns a vector of `Range<usize>`, which represents the ranges of text
+// / segments after processing based on bullet points and sentence splitting.
 pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
     // First split based on bullet points
     let mut segments = Vec::new(); // Vector to store the ranges of text segments
@@ -163,10 +163,10 @@ pub(crate) fn chunk_text(text: &str) -> Vec<Range<usize>> {
         segments.push(last_idx + idx..last_idx + back_idx);
     }
     let mut ranges = Vec::new();
-    /// The above Rust code is iterating over a collection of segment ranges and extending a vector of
-    /// ranges with the result of splitting sentences from the text within each segment range. It uses a
-    /// `SentenceChunker` to split sentences and then maps the resulting sentence ranges to adjust their
-    /// start and end positions based on the segment range they belong to.
+    // The above Rust code is iterating over a collection of segment ranges and extending a vector of
+    // ranges with the result of splitting sentences from the text within each segment range. It uses a
+    // `SentenceChunker` to split sentences and then maps the resulting sentence ranges to adjust their
+    // start and end positions based on the segment range they belong to.
     for segment_range in segments {
         ranges.extend(
             SentenceChunker::default()
@@ -329,12 +329,12 @@ impl TagClassifier {
     }
 }
 
-/// The above code in Rust is defining constants that store the content of text files located in the
-/// "classifier-notes" directory. Each constant corresponds to a specific note related to a topic such
-/// as integrals, SIMD, discrete math, reactivity, operating systems, statistics, history, science,
-/// physics, and philosophy. The `include_str!` macro is used to include the content of the text files
-/// as string literals in the constants. This allows the program to access and use the content of these
-/// notes during runtime.
+// The above code in Rust is defining constants that store the content of text files located in the
+// "classifier-notes" directory. Each constant corresponds to a specific note related to a topic such
+// as integrals, SIMD, discrete math, reactivity, operating systems, statistics, history, science,
+// physics, and philosophy. The `include_str!` macro is used to include the content of the text files
+// as string literals in the constants. This allows the program to access and use the content of these
+// notes during runtime.
 const INTEGRALS_NOTE: &str = include_str!("./classifier-notes/integrals.note");
 const SIMD_NOTE: &str = include_str!("./classifier-notes/simd.note");
 const DISCRETE_MATH_NOTE: &str = include_str!("./classifier-notes/discrete-math.note");
@@ -346,15 +346,15 @@ const SCIENCE_NOTE: &str = include_str!("./classifier-notes/science.note");
 const PHYSICS_NOTE: &str = include_str!("./classifier-notes/physics.note");
 const PHILOSOPHY_NOTE: &str = include_str!("./classifier-notes/philosophy.note");
 
-/// The function `default_documents` returns a vector of `ContextualDocument` instances with associated
-/// tags.
-/// 
-/// Returns:
-/// 
-/// A vector of `ContextualDocument` structs is being returned. Each `ContextualDocument` contains a
-/// `Document` and a vector of `Tag`s. The documents include topics such as "Intro to Integrals", "SIMD
-/// Intro", "Discrete Math", "Statistics", "Reactivity systems", "Operating Systems", "History",
-/// "Philosophy", "Science", and "Physics
+// The function `default_documents` returns a vector of `ContextualDocument` instances with associated
+// tags.
+// 
+// Returns:
+// 
+// A vector of `ContextualDocument` structs is being returned. Each `ContextualDocument` contains a
+// `Document` and a vector of `Tag`s. The documents include topics such as "Intro to Integrals", "SIMD
+// Intro", "Discrete Math", "Statistics", "Reactivity systems", "Operating Systems", "History",
+// "Philosophy", "Science", and "Physics
 fn default_documents() -> Vec<ContextualDocument> {
     vec![
         ContextualDocument {

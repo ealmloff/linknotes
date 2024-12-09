@@ -59,16 +59,16 @@ Acceptable and Unacceptable Input Values/Types:
 use kalosm::language::*;
 use note::{get_tags, read_note, remove_note, save_note, set_tags, ContextualDocument};
 use search::{context_search, search};
-/// The line `use std::{ num::NonZero, sync::{Arc, OnceLock} };` is importing specific items from the
-/// `std` (standard library) module in Rust. Here's what each item does:
+// The line `use std::{ num::NonZero, sync::{Arc, OnceLock} };` is importing specific items from the
+// `std` (standard library) module in Rust. Here's what each item does:
 use std::{
     num::NonZero, // NonZero is a type that represents a non-zero integer. It's used in the `bert` function to set the cache size.
     sync::{Arc, OnceLock}, // Arc is a type that provides shared ownership of a value. OnceLock is a type that ensures a value is only initialized once.
 };
 use surrealdb::engine::local::Db; // surrealdb is a database engine that provides local storage capabilities.
-/// The line `use workspace::{ delete_workspace, files_in_workspace, get_workspace_id, load_workspace,
-/// unload_workspace };` is importing specific functions and identifiers from the `workspace` module in
-/// Rust. Here's what each of these imported items does:
+// The line `use workspace::{ delete_workspace, files_in_workspace, get_workspace_id, load_workspace,
+// unload_workspace };` is importing specific functions and identifiers from the `workspace` module in
+// Rust. Here's what each of these imported items does:
 use workspace::{ 
     delete_workspace, files_in_workspace, get_workspace_id, load_workspace, unload_workspace, // These functions are used to manage workspaces.
 };
@@ -81,22 +81,22 @@ mod note;
 mod search;
 mod workspace;
 
-/// The line `static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();`
-/// is declaring a static variable named `BERT` of type `OnceLock` that holds a result of type
-/// `anyhow::Result` containing an `Arc` (atomic reference counting) to a `CachedEmbeddingModel`
-/// specialized with `Bert`.
+// The line `static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();`
+// is declaring a static variable named `BERT` of type `OnceLock` that holds a result of type
+// `anyhow::Result` containing an `Arc` (atomic reference counting) to a `CachedEmbeddingModel`
+// specialized with `Bert`.
 static BERT: OnceLock<anyhow::Result<Arc<CachedEmbeddingModel<Bert>>>> = OnceLock::new();
-/// The line `static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());` is
-/// declaring a static variable named `BERT_LOCK` of type `tokio::sync::Mutex<()>`.
+// The line `static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());` is
+// declaring a static variable named `BERT_LOCK` of type `tokio::sync::Mutex<()>`.
 static BERT_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
-/// The function `bert` is an asynchronous Rust function that retrieves a cached embedding model of
-/// Bert, ensuring only one instance is created using a lock.
-/// 
-/// Returns:
-/// 
-/// The function `bert()` returns a `Result` containing a reference to a static `Arc` pointing to a
-/// `CachedEmbeddingModel` of type `Bert`.
+// / The function `bert` is an asynchronous Rust function that retrieves a cached embedding model of
+// / Bert, ensuring only one instance is created using a lock.
+// / 
+// / Returns:
+// / 
+// / The function `bert()` returns a `Result` containing a reference to a static `Arc` pointing to a
+// / `CachedEmbeddingModel` of type `Bert`.
 async fn bert() -> anyhow::Result<&'static Arc<CachedEmbeddingModel<Bert>>> {
     let _guard = BERT_LOCK.lock().await; // Acquire a lock on the BERT_LOCK mutex.
     if BERT.get().is_none() { // Check if the BERT static variable is uninitialized.
@@ -114,14 +114,14 @@ async fn bert() -> anyhow::Result<&'static Arc<CachedEmbeddingModel<Bert>>> {
         .map_err(|err| anyhow::anyhow!(err)) // Map any error to an anyhow error.
 }
 
-/// The line `type ContextualDocumentTable = DocumentTable<Db, ContextualDocument,
-/// Arc<CachedEmbeddingModel<Bert>>, DefaultSentenceChunker>;` is defining a type alias in Rust.
+// The line `type ContextualDocumentTable = DocumentTable<Db, ContextualDocument,
+// Arc<CachedEmbeddingModel<Bert>>, DefaultSentenceChunker>;` is defining a type alias in Rust.
 type ContextualDocumentTable =
     DocumentTable<Db, ContextualDocument, Arc<CachedEmbeddingModel<Bert>>, DefaultSentenceChunker>;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-/// The function initializes a Tauri application with various plugins and handlers for workspace and
-/// note management.
+// The function initializes a Tauri application with various plugins and handlers for workspace and
+// note management.
 pub fn run() {
     tauri::Builder::default() // Create a new Tauri application builder with default settings.
         .plugin(tauri_plugin_shell::init()) // Initialize the Tauri shell plugin.
@@ -144,8 +144,8 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// The test function `test_notes` in Rust performs various operations related to saving, removing,
-/// searching, and asserting notes within a workspace.
+// The test function `test_notes` in Rust performs various operations related to saving, removing,
+// searching, and asserting notes within a workspace.
 #[tokio::test]
 async fn test_notes() {
     _ = tracing_subscriber::fmt::try_init();

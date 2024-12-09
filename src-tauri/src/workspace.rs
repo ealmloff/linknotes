@@ -252,7 +252,7 @@ pub fn get_workspace_id(path: PathBuf) -> WorkspaceId { // Get the ID of a works
     WorkspaceId { id }
 }
 
-/// Unload a workspace from memory. This should be called whenever the workspace is closed.
+// Unload a workspace from memory. This should be called whenever the workspace is closed.
 #[tauri::command]
 pub fn unload_workspace(id: WorkspaceId) { 
     tracing::info!("unload_workspace called with id: {:?}", id);

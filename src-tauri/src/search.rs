@@ -62,20 +62,43 @@ struct MetaId {
     id: String, // The id of the document
 } 
 
+
+// Represents the result of a search operation.
+//
+// # Fields
+//
+// * `distance` - A floating-point value representing the distance or relevance of the search result.
+// * `title` - A string containing the title of the search result.
+// * `character_range` - A range of character indices indicating the position of the search result within the source text.
 #[derive(Serialize, Deserialize)]
-/// Represents the result of a search operation.
-///
-/// # Fields
-///
-/// * `distance` - A floating-point value representing the distance or relevance of the search result.
-/// * `title` - A string containing the title of the search result.
-/// * `character_range` - A range of character indices indicating the position of the search result within the source text.
 pub struct SearchResult {
     pub distance: f32,
     pub title: String,
     pub character_range: Range<usize>,
 }
 
+
+// / Queries the database for documents that contain all specified tags.
+// /
+// / This function constructs and executes a SQL query to retrieve the IDs of documents
+// / from the `document_table` that contain all the tags specified in the `tags` vector.
+// / The query uses the `CONTAINSALL` function to ensure that all tags are present in the
+// / document's tags.
+// /
+// / # Arguments
+// /
+// / * `document_table` - A reference to the table containing the documents.
+// / * `tags` - A vector of tags that the documents must contain.
+// /
+// / # Returns
+// /
+// / A `Result` containing a vector of document IDs if the query is successful, or an error
+// / message as a `String` if the query fails.
+// /
+// / # Errors
+// /
+// / This function will return an error if the query execution fails or if there is an issue
+// / with serializing the `tags` vector to a JSON string.
 #[tauri::command]
 pub async fn search(
     text: String,
@@ -94,27 +117,7 @@ pub async fn search(
         .embed_for(EmbeddingInput::new(text, EmbeddingVariant::Query))
         .await
         .map_err(|e| e.to_string())?;
-    /// Queries the database for documents that contain all specified tags.
-    ///
-    /// This function constructs and executes a SQL query to retrieve the IDs of documents
-    /// from the `document_table` that contain all the tags specified in the `tags` vector.
-    /// The query uses the `CONTAINSALL` function to ensure that all tags are present in the
-    /// document's tags.
-    ///
-    /// # Arguments
-    ///
-    /// * `document_table` - A reference to the table containing the documents.
-    /// * `tags` - A vector of tags that the documents must contain.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a vector of document IDs if the query is successful, or an error
-    /// message as a `String` if the query fails.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if the query execution fails or if there is an issue
-    /// with serializing the `tags` vector to a JSON string.
+    
     let mut documents_with_all_tags = document_table
         .table()
         .db()
@@ -162,13 +165,13 @@ pub async fn search(
 
 #[derive(Serialize, Deserialize)]
 pub struct ContextResult {
-    /// The distance from the search result to the cursor
+    // The distance from the search result to the cursor
     pub distance: f32,
-    /// The title of the document
+    // The title of the document
     pub title: String,
-    /// The text of the search result. This includes the context sentences around the search result
+    // The text of the search result. This includes the context sentences around the search result
     pub text: String,
-    /// The utf16 index of the most relevant section of the search result within [`ContextResult::text`]
+    // The utf16 index of the most relevant section of the search result within [`ContextResult::text`]
     pub relevant_range: Range<usize>,
 }
 

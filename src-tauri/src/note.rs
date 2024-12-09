@@ -79,13 +79,13 @@ struct ContextualDocumentLocation { // Define the `ContextualDocumentLocation` s
     segments: Vec<Segment>, // A `Vec<Segment>` field to store the document segments.
 }
 
+// / A struct representing a document with its associated tags.
+// /
+// / # Fields
+// /
+// / * `document` - The main document content.
+// / * `tags` - A list of tags associated with the document.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-/// A struct representing a document with its associated tags.
-///
-/// # Fields
-///
-/// * `document` - The main document content.
-/// * `tags` - A list of tags associated with the document.
 pub struct ContextualDocument {
     pub document: Document,
     pub tags: Vec<Tag>,
@@ -126,7 +126,7 @@ struct Segment {
 #[error("document does not exist")]
 pub struct DocumentDoesNotExistError;
 
-/// Set the tags for a note with the given a title in the workspace. The path should be canonicalized so it is consistent regardless of the working directory.
+// Set the tags for a note with the given a title in the workspace. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
 pub async fn set_tags(
     title: String, // Define the `title` parameter as a `String`.
@@ -165,6 +165,26 @@ pub async fn set_tags(
     Ok(())
 }
 
+// Retrieves the location of a document from the database based on the provided title.
+// 
+// This function performs an asynchronous database query to select the document location
+// from the `DOCUMENT_NAME_TABLE` using the given `title`. If the document is found, its
+// location is returned. If the document does not exist, a `DocumentDoesNotExistError` is returned.
+// 
+// # Errors
+// 
+// Returns a `DocumentDoesNotExistError` if the document with the specified title does not exist in the database.
+// 
+// # Example
+// 
+// ```rust
+// let location = db
+//     .select((DOCUMENT_NAME_TABLE, &title))
+//     .await
+//     .unwrap()
+//     .ok_or(DocumentDoesNotExistError)?;
+// ```
+
 #[tauri::command]
 pub async fn get_tags( // Define the `get_tags` function as a Tauri command.
     title: String,
@@ -174,25 +194,7 @@ pub async fn get_tags( // Define the `get_tags` function as a Tauri command.
     let workspace = get_workspace_ref(workspace_id);
     let document_table = workspace.document_table().await.unwrap();
     let db = document_table.table().db();
-    /// Retrieves the location of a document from the database based on the provided title.
-    /// 
-    /// This function performs an asynchronous database query to select the document location
-    /// from the `DOCUMENT_NAME_TABLE` using the given `title`. If the document is found, its
-    /// location is returned. If the document does not exist, a `DocumentDoesNotExistError` is returned.
-    /// 
-    /// # Errors
-    /// 
-    /// Returns a `DocumentDoesNotExistError` if the document with the specified title does not exist in the database.
-    /// 
-    /// # Example
-    /// 
-    /// ```rust
-    /// let location = db
-    ///     .select((DOCUMENT_NAME_TABLE, &title))
-    ///     .await
-    ///     .unwrap()
-    ///     .ok_or(DocumentDoesNotExistError)?;
-    /// ```
+   
     let location: ContextualDocumentLocation = db
         .select((DOCUMENT_NAME_TABLE, &title))
         .await
@@ -202,7 +204,22 @@ pub async fn get_tags( // Define the `get_tags` function as a Tauri command.
     Ok(note.tags)
 }
 
-/// Save a note with a title, and contents in a workspace. The path should be canonicalized so it is consistent regardless of the working directory.
+// Save a note with a title, and contents in a workspace. The path should be canonicalized so it is consistent regardless of the working directory.
+// Creates an iterator of `Chunk` structs from the given `sentences` and `embeddings`.
+//
+// Each `Chunk` contains a `byte_range` from `sentences` and a corresponding `embedding`
+// from `embeddings`. The `embeddings` field of the `Chunk` is initialized as a vector
+// containing a single `embedding`.
+//
+// # Arguments
+//
+// * `sentences` - An iterable collection of byte ranges.
+// * `embeddings` - An iterable collection of embeddings corresponding to the byte ranges.
+//
+// # Returns
+//
+// An iterator of `Chunk` structs, where each `Chunk` contains a byte range and a vector
+// with a single embedding.
 #[tauri::command]
 pub async fn save_note(
     title: String,
@@ -229,21 +246,7 @@ pub async fn save_note(
         .embed_batch(sentences.iter().map(|sentence| &body[sentence.clone()]))
         .await
         .unwrap();
-    /// Creates an iterator of `Chunk` structs from the given `sentences` and `embeddings`.
-    ///
-    /// Each `Chunk` contains a `byte_range` from `sentences` and a corresponding `embedding`
-    /// from `embeddings`. The `embeddings` field of the `Chunk` is initialized as a vector
-    /// containing a single `embedding`.
-    ///
-    /// # Arguments
-    ///
-    /// * `sentences` - An iterable collection of byte ranges.
-    /// * `embeddings` - An iterable collection of embeddings corresponding to the byte ranges.
-    ///
-    /// # Returns
-    ///
-    /// An iterator of `Chunk` structs, where each `Chunk` contains a byte range and a vector
-    /// with a single embedding.
+    
     let chunks = sentences
         .clone()
         .into_iter()
@@ -324,7 +327,7 @@ pub async fn save_note(
     Ok(())
 }
 
-/// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
+// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
 pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
     tracing::info!("Removing note with title: {:?}", title); // Log the removal of a note with the specified title.
@@ -352,7 +355,7 @@ pub async fn remove_note(title: String, workspace_id: WorkspaceId) {
     }
 }
 
-/// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
+// Remove a note from a specific path. The path should be canonicalized so it is consistent regardless of the working directory.
 #[tauri::command]
 pub async fn read_note( // Define the `read_note` function as a Tauri command.
     title: String, // Define the `title` parameter as a `String`.
