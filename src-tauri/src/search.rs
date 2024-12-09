@@ -1,18 +1,75 @@
-use kalosm::{language::*, IntoEmbeddingIndexedTableSearchFilter};
-use serde::{Deserialize, Serialize};
-use std::ops::Range;
-use surrealdb::sql::Id;
+/*!
+# Prologue Comments
+## Name of Code Artifact: Search Application Framework
 
-use crate::bert;
+## Brief Description: This code provides a framework for searching notes, including functionality to search for notes based on text and tags, as well as to search for context around a cursor position in a note. It integrates with Tauri for application development.
+## Programmer’s Name: Evan Almoff
+
+## Date Created: 2024-10-14
+## Dates Revised and Description of Revisions: 
+## -> 2024-10-15: Added search functionality and workspace management.
+## -> 2024-10-16: Improved search functionality and added error handling.
+## -> 2024-10-17: Fixed bugs and improved performance.
+## -> 2024-10-18: Added support for multiple workspaces.
+## -> 2024-11-14: Added support for context searching
+## -> 2024-12-08: Finalized documentation and testing.
+
+
+## Preconditions: A Tauri application context is required for the run function.
+The BERT model must be initialized using the bert function before using search functionalities dependent on embeddings.
+Workspaces must be loaded for note-related operations.
+Acceptable and Unacceptable Input Values/Types:
+
+## Postconditions:
+
+### Searches return relevant results based on embeddings or fail with descriptive errors.
+
+## Return Values/Types:
+
+### Functions return Result types with success yielding appropriate outputs (e.g., search results, note metadata).
+### Errors are encapsulated in the anyhow::Result type for robust error handling.
+### Error and Exception Condition Values/Types: anyhow::Error: 
+-> For general errors. 
+-> Initialization errors for BERT or issues with workspace paths are raised.
+-> File I/O errors occur when accessing or modifying workspace files.
+## Side Effects:
+### Workspace files may be created, modified, or deleted based on the function.
+### A global singleton (BERT) is initialized, consuming system resources.
+
+## Invariants:
+
+### Once initialized, the BERT model remains immutable.
+### Workspace states should remain consistent after note operations.
+
+## Known Faults:
+
+### Potential performance bottleneck during embedding generation if BERT initialization is delayed.
+### Edge cases with workspace paths or malformed input data may cause unexpected behavior.
+
+*/
+
+use kalosm::{language::*, IntoEmbeddingIndexedTableSearchFilter}; // Import the necessary modules from the kalosm crate.
+use serde::{Deserialize, Serialize}; // Import the necessary modules from the serde crate.
+use std::ops::Range; // Import the Range module from the standard library.
+use surrealdb::sql::Id; // Import the Id module from the surrealdb crate.
+
+use crate::bert;    // Import the bert module from the current crate.
 use crate::classifier::chunk_text;
 use crate::workspace::{get_workspace_ref, WorkspaceId};
 
 #[derive(Serialize, Deserialize)]
 struct MetaId {
-    id: String,
-}
+    id: String, // The id of the document
+} 
 
 #[derive(Serialize, Deserialize)]
+/// Represents the result of a search operation.
+///
+/// # Fields
+///
+/// * `distance` - A floating-point value representing the distance or relevance of the search result.
+/// * `title` - A string containing the title of the search result.
+/// * `character_range` - A range of character indices indicating the position of the search result within the source text.
 pub struct SearchResult {
     pub distance: f32,
     pub title: String,
@@ -37,6 +94,27 @@ pub async fn search(
         .embed_for(EmbeddingInput::new(text, EmbeddingVariant::Query))
         .await
         .map_err(|e| e.to_string())?;
+    /// Queries the database for documents that contain all specified tags.
+    ///
+    /// This function constructs and executes a SQL query to retrieve the IDs of documents
+    /// from the `document_table` that contain all the tags specified in the `tags` vector.
+    /// The query uses the `CONTAINSALL` function to ensure that all tags are present in the
+    /// document's tags.
+    ///
+    /// # Arguments
+    ///
+    /// * `document_table` - A reference to the table containing the documents.
+    /// * `tags` - A vector of tags that the documents must contain.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a vector of document IDs if the query is successful, or an error
+    /// message as a `String` if the query fails.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the query execution fails or if there is an issue
+    /// with serializing the `tags` vector to a JSON string.
     let mut documents_with_all_tags = document_table
         .table()
         .db()
@@ -95,28 +173,28 @@ pub struct ContextResult {
 }
 
 // Take a list of sentence ranges and return the range of sentences of a specific length around the target sentence
-fn get_sentence_range(
-    sentences: &[Range<usize>],
+fn get_sentence_range( // Function to get the range of sentences of a specific length around the target sentence.
+    sentences: &[Range<usize>], // A slice of sentence ranges.
     target_sentence_index: usize,
     sentences_to_include: usize,
 ) -> Range<usize> {
     let sentence_embedding_range_end =
-        (target_sentence_index + sentences_to_include / 2).min(sentences.len());
-    let sentence_embedding_range_start =
-        sentence_embedding_range_end.saturating_sub(sentences_to_include);
-    sentence_embedding_range_start..sentence_embedding_range_end
+        (target_sentence_index + sentences_to_include / 2).min(sentences.len()); // The end of the sentence embedding range.
+    let sentence_embedding_range_start = 
+        sentence_embedding_range_end.saturating_sub(sentences_to_include); // The start of the sentence embedding range.
+    sentence_embedding_range_start..sentence_embedding_range_end // Return the range of sentences of a specific length around the target sentence.
 }
 
 fn utf8_range_to_utf16_range(utf8_range: Range<usize>, text: &str) -> Range<usize> {
     let utf16_start = text[..utf8_range.start]
+        .chars() // Convert the text to a character iterator.
+        .map(|c| c.len_utf16()) // Map each character to its utf16 length.
+        .sum(); // Sum the utf16 lengths of all characters before the range.
+    let utf16_len: usize = text[utf8_range.start..utf8_range.end] // Get the utf16 length of the range.
         .chars()
-        .map(|c| c.len_utf16())
+        .map(|c| c.len_utf16()) // Map each character to its utf16 length.
         .sum();
-    let utf16_len: usize = text[utf8_range.start..utf8_range.end]
-        .chars()
-        .map(|c| c.len_utf16())
-        .sum();
-    utf16_start..utf16_start + utf16_len
+    utf16_start..utf16_start + utf16_len // Return the utf16 range.
 }
 
 #[tauri::command]
